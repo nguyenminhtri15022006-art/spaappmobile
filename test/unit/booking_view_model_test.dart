@@ -21,13 +21,66 @@ void main() {
         spaId: 'spa_lotus',
         serviceId: 'srv_lotus_gd60',
         branchId: 'br_lotus_q1',
-        initialDate: DateTime.now().add(const Duration(days: 2)),
+        initialDate: DateTime(2026, 12, 1),
         initialTime: '10:30',
       );
 
       expect(draftViewModel.state.isValid, isTrue);
       expect(draftViewModel.state.spaId, equals('spa_lotus'));
       expect(draftViewModel.state.selectedTime, equals('10:30'));
+    });
+
+    test('Giữ nguyên ngày, giờ, ghi chú khi quay lại cùng một draft (sau khi sang Login)', () {
+      final chosenDate = DateTime(2026, 12, 25);
+      draftViewModel.initDraft(
+        spaId: 'spa_lotus',
+        serviceId: 'srv_lotus_gd60',
+        branchId: 'br_lotus_q1',
+        initialDate: chosenDate,
+        initialTime: '18:00',
+      );
+
+      draftViewModel.updateCustomerInfo(notes: 'Yêu cầu KTV chuyên nghiệp, áp lực vừa phải');
+
+      // Giả lập quay lại BookingFormScreen sau khi người dùng đăng nhập thành công
+      // Gọi initDraft với initialDate/initialTime mặc định
+      draftViewModel.initDraft(
+        spaId: 'spa_lotus',
+        serviceId: 'srv_lotus_gd60',
+        branchId: 'br_lotus_q1',
+        initialDate: DateTime.now().add(const Duration(days: 1)),
+        initialTime: '14:30',
+      );
+
+      // Phải bảo tồn đúng dữ liệu người dùng đã chọn trước đó, KHÔNG bị ghi đè bởi mặc định
+      expect(draftViewModel.state.selectedDate, equals(chosenDate));
+      expect(draftViewModel.state.selectedTime, equals('18:00'));
+      expect(draftViewModel.state.notes, equals('Yêu cầu KTV chuyên nghiệp, áp lực vừa phải'));
+    });
+
+    test('Khi đổi Spa hoặc chi nhánh không hợp lệ, lựa chọn không hợp lệ phải được reset', () {
+      draftViewModel.initDraft(
+        spaId: 'spa_lotus',
+        serviceId: 'srv_lotus_gd60',
+        branchId: 'br_lotus_q1',
+      );
+
+      draftViewModel.updateCustomerInfo(notes: 'Ghi chú cho Lotus');
+
+      // Đổi sang Spa khác với ID chi nhánh không thuộc Spa đó
+      draftViewModel.initDraft(
+        spaId: 'spa_green',
+        serviceId: 'srv_green_gd45',
+        branchId: 'br_lotus_q1', // Chi nhánh này của Lotus, không thuộc Green!
+      );
+
+      // Chi nhánh không hợp lệ bị reset
+      expect(draftViewModel.state.branchId, isNull);
+      // Ghi chú của Spa cũ bị xóa
+      expect(draftViewModel.state.notes, isEmpty);
+      // SpaId và ServiceId hợp lệ của Green được cập nhật
+      expect(draftViewModel.state.spaId, equals('spa_green'));
+      expect(draftViewModel.state.serviceId, equals('srv_green_gd45'));
     });
 
     test('Xác nhận đặt lịch thành công và lưu vào Mock Repository', () async {
@@ -66,7 +119,6 @@ void main() {
     });
 
     test('Lọc danh sách lịch hẹn theo trạng thái', () async {
-      // Lọc danh sách đã xác nhận
       await myBookingsViewModel.loadBookings(status: BookingStatus.confirmed);
       for (final b in myBookingsViewModel.state.bookings) {
         expect(b.status, equals(BookingStatus.confirmed));

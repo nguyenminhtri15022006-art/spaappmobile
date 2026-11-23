@@ -92,10 +92,10 @@ class MockAdministrativeRepository implements AdministrativeRepository {
     ),
     AdministrativeUnit(
       code: 'VN-SG-TB2',
-      name: 'Phường 2 (Tân Bình)',
+      name: 'Phường 2',
       type: AdministrativeType.ward,
       parentCode: 'VN-SG',
-      aliases: ['Quận Tân Bình', 'Quan Tan Binh', 'San bay Tan Son Nhat'],
+      aliases: ['Tân Bình', 'Quận Tân Bình', 'Quan Tan Binh', 'San bay Tan Son Nhat'],
     ),
 
     // Hà Nội
@@ -115,10 +115,10 @@ class MockAdministrativeRepository implements AdministrativeRepository {
     ),
     AdministrativeUnit(
       code: 'VN-HN-TV',
-      name: 'Phường Trúc Bạch (Trấn Vũ)',
+      name: 'Phường Trúc Bạch',
       type: AdministrativeType.ward,
       parentCode: 'VN-HN',
-      aliases: ['Quận Ba Đình', 'Quan Ba Dinh', 'Ho Tay', 'Truc Bach', 'Tran Vu'],
+      aliases: ['Trấn Vũ', 'Tran Vu', 'Quận Ba Đình', 'Quan Ba Dinh', 'Ho Tay', 'Truc Bach'],
     ),
     AdministrativeUnit(
       code: 'VN-HN-CG',

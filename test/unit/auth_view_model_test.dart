@@ -18,10 +18,10 @@ void main() {
       expect(viewModel.state.user, isNull);
     });
 
-    test('Đăng nhập thành công với thông tin hợp lệ', () async {
+    test('Đăng nhập thành công với tài khoản Demo có sẵn', () async {
       final success = await viewModel.login(
         email: 'minhtri@gmail.com',
-        password: 'password123',
+        password: '123456',
       );
 
       expect(success, isTrue);
@@ -30,10 +30,34 @@ void main() {
       expect(viewModel.state.status, equals(AuthStatus.authenticated));
     });
 
+    test('Đăng nhập thất bại khi tài khoản chưa được đăng ký trong hệ thống Mock', () async {
+      final success = await viewModel.login(
+        email: 'unregistered_person@gmail.com',
+        password: '123456',
+      );
+
+      expect(success, isFalse);
+      expect(viewModel.state.isAuthenticated, isFalse);
+      expect(viewModel.state.status, equals(AuthStatus.error));
+      expect(viewModel.state.errorMessage, contains('chưa được đăng ký'));
+    });
+
+    test('Đăng nhập thất bại khi sai mật khẩu của tài khoản Demo', () async {
+      final success = await viewModel.login(
+        email: 'minhtri@gmail.com',
+        password: 'wrong_password_999',
+      );
+
+      expect(success, isFalse);
+      expect(viewModel.state.isAuthenticated, isFalse);
+      expect(viewModel.state.status, equals(AuthStatus.error));
+      expect(viewModel.state.errorMessage, contains('Mật khẩu không chính xác'));
+    });
+
     test('Đăng nhập thất bại khi email không đúng định dạng', () async {
       final success = await viewModel.login(
         email: 'invalid_email_format',
-        password: 'password123',
+        password: '123456',
       );
 
       expect(success, isFalse);
@@ -42,35 +66,51 @@ void main() {
       expect(viewModel.state.errorMessage, isNotNull);
     });
 
-    test('Đăng nhập thất bại khi mật khẩu dưới 6 ký tự', () async {
-      final success = await viewModel.login(
-        email: 'user@gmail.com',
-        password: '123',
-      );
-
-      expect(success, isFalse);
-      expect(viewModel.state.errorMessage, contains('6 ký tự'));
-    });
-
-    test('Đăng ký tài khoản thành công', () async {
-      final success = await viewModel.register(
+    test('Đăng ký tài khoản mới thành công và cho phép đăng nhập lại', () async {
+      // 1. Đăng ký tài khoản mới
+      final regSuccess = await viewModel.register(
         name: 'Trần Thị Mai',
         email: 'thimai@gmail.com',
         phone: '0987654321',
-        password: 'password123',
+        password: 'mypassword123',
       );
 
-      expect(success, isTrue);
+      expect(regSuccess, isTrue);
       expect(viewModel.state.isAuthenticated, isTrue);
       expect(viewModel.state.user?.name, equals('Trần Thị Mai'));
+
+      // 2. Đăng xuất
+      await viewModel.logout();
+      expect(viewModel.state.isAuthenticated, isFalse);
+
+      // 3. Đăng nhập lại với thông tin vừa đăng ký
+      final loginSuccess = await viewModel.login(
+        email: 'thimai@gmail.com',
+        password: 'mypassword123',
+      );
+      expect(loginSuccess, isTrue);
+      expect(viewModel.state.isAuthenticated, isTrue);
+      expect(viewModel.state.user?.email, equals('thimai@gmail.com'));
+    });
+
+    test('Đăng ký thất bại khi trùng email đã tồn tại', () async {
+      final success = await viewModel.register(
+        name: 'Trùng Email',
+        email: 'minhtri@gmail.com', // Email demo đã tồn tại
+        phone: '0988776655',
+        password: '123456',
+      );
+
+      expect(success, isFalse);
+      expect(viewModel.state.errorMessage, contains('đã được đăng ký'));
     });
 
     test('Đăng ký thất bại khi để trống họ tên', () async {
       final success = await viewModel.register(
         name: '',
-        email: 'thimai@gmail.com',
+        email: 'newuser@gmail.com',
         phone: '0987654321',
-        password: 'password123',
+        password: '123456',
       );
 
       expect(success, isFalse);
@@ -78,7 +118,7 @@ void main() {
     });
 
     test('Đăng xuất xóa sạch thông tin người dùng', () async {
-      await viewModel.login(email: 'minhtri@gmail.com', password: 'password123');
+      await viewModel.login(email: 'minhtri@gmail.com', password: '123456');
       expect(viewModel.state.isAuthenticated, isTrue);
 
       await viewModel.logout();
@@ -87,7 +127,7 @@ void main() {
     });
 
     test('Cập nhật hồ sơ cá nhân thành công', () async {
-      await viewModel.login(email: 'minhtri@gmail.com', password: 'password123');
+      await viewModel.login(email: 'minhtri@gmail.com', password: '123456');
       final updated = await viewModel.updateProfile(
         name: 'Minh Trí Cập Nhật',
         phone: '0999888777',

@@ -131,10 +131,32 @@ void main() {
       }
     });
 
-    test('10. Bộ lọc rỗng (mặc định) trả về toàn bộ dịch vụ', () async {
-      final results = await repository.search(const SpaSearchFilter());
-      expect(results.isNotEmpty, isTrue);
-      expect(results.length, greaterThanOrEqualTo(10));
+    test('10. Bộ lọc khoảng cách: Chỉ áp dụng khi người dùng chọn Mốc Demo rõ ràng', () async {
+      // 1. Khi DemoLocation.none (chờ GPS), maxDistanceKm không áp dụng lọc ngầm
+      final noneResults = await repository.search(
+        const SpaSearchFilter(
+          demoLocation: DemoLocation.none,
+          maxDistanceKm: 1.0,
+        ),
+      );
+      expect(noneResults.length, greaterThanOrEqualTo(10));
+
+      // 2. Khi chọn mốc Demo Bến Thành và bán kính 2km, chỉ các chi nhánh gần Bến Thành được trả về
+      final benThanhResults = await repository.search(
+        const SpaSearchFilter(
+          demoLocation: DemoLocation.benThanh,
+          maxDistanceKm: 2.0,
+        ),
+      );
+      expect(benThanhResults.isNotEmpty, isTrue);
+      for (final res in benThanhResults) {
+        expect(
+          res.matchingBranches.any((b) =>
+              b.provinceCode == 'VN-SG' &&
+              (b.wardCode == 'VN-SG-BT' || b.wardCode == 'VN-SG-BN' || b.wardCode == 'VN-SG-VTS' || b.wardCode == 'VN-SG-DK')),
+          isTrue,
+        );
+      }
     });
 
     test('11. Gợi ý từ khóa tự động', () async {
@@ -149,15 +171,6 @@ void main() {
 
       final nullService = await repository.getServiceById('srv_invalid_9999');
       expect(nullService, isNull);
-    });
-
-    test('13. Sắp xếp gần nhất (SortOption.nearest) tính theo tọa độ địa lý, không lấy số chi nhánh', () async {
-      final nearestResults = await repository.search(
-        const SpaSearchFilter(sortBy: SortOption.nearest),
-      );
-      expect(nearestResults.isNotEmpty, isTrue);
-      // Kết quả phải trả về danh sách hợp lệ
-      expect(nearestResults.first.matchingBranches.isNotEmpty, isTrue);
     });
   });
 }

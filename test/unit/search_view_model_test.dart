@@ -18,7 +18,7 @@ void main() {
   });
 
   group('SearchViewModel State Tests', () {
-    test('4. Chọn tỉnh/thành mới thì xã/phường cũ BẮT BUỘC được reset', () {
+    test('Chọn tỉnh/thành mới thì xã/phường cũ BẮT BUỘC được reset', () {
       viewModel.openFilterSheet();
 
       // Chọn tỉnh TP.HCM và phường Bến Nghé
@@ -31,6 +31,37 @@ void main() {
       viewModel.updateDraftProvince('VN-HN');
       expect(viewModel.state.draftFilter.provinceCode, equals('VN-HN'));
       expect(viewModel.state.draftFilter.wardCode, isNull);
+    });
+
+    test('Không thể chọn xã/phường nếu chưa chọn tỉnh/thành tương ứng', () {
+      viewModel.openFilterSheet();
+
+      // Chưa chọn tỉnh mà chọn phường
+      expect(viewModel.state.draftFilter.provinceCode, isNull);
+      viewModel.updateDraftWard('VN-SG-BN');
+
+      // Phường không được phép cập nhật
+      expect(viewModel.state.draftFilter.wardCode, isNull);
+    });
+
+    test('Cập nhật mốc Demo và bán kính khoảng cách', () {
+      viewModel.openFilterSheet();
+
+      // Mặc định là DemoLocation.none -> không thể chọn bán kính
+      viewModel.updateDraftDistance(5.0);
+      expect(viewModel.state.draftFilter.maxDistanceKm, isNull);
+
+      // Chọn mốc Demo Bến Thành
+      viewModel.updateDraftDemoLocation(DemoLocation.benThanh);
+      expect(viewModel.state.draftFilter.demoLocation, equals(DemoLocation.benThanh));
+
+      // Giờ có thể chọn bán kính 5km
+      viewModel.updateDraftDistance(5.0);
+      expect(viewModel.state.draftFilter.maxDistanceKm, equals(5.0));
+
+      // Nếu chuyển về DemoLocation.none (chờ GPS thật) thì khoảng cách bị xóa
+      viewModel.updateDraftDemoLocation(DemoLocation.none);
+      expect(viewModel.state.draftFilter.maxDistanceKm, isNull);
     });
 
     test('DraftFilter tách biệt với AppliedFilter cho đến khi bấm Áp dụng', () {
@@ -59,7 +90,7 @@ void main() {
       expect(viewModel.state.draftFilter.keyword, equals('gội đầu'));
     });
 
-    test('11. Kết quả không tìm thấy hiển thị SearchStatus.empty', () async {
+    test('Kết quả không tìm thấy hiển thị SearchStatus.empty', () async {
       await viewModel.submitSearch('dịch vụ không hề tồn tại xyz 999');
       expect(viewModel.state.status, equals(SearchStatus.empty));
       expect(viewModel.state.results.isEmpty, isTrue);

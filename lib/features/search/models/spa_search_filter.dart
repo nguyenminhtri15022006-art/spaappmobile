@@ -4,10 +4,25 @@ enum SortOption {
   priceDesc('Giá cao đến thấp'),
   ratingDesc('Đánh giá cao nhất'),
   durationAsc('Thời lượng ngắn nhất'),
-  nearest('Gần nhất (Demo)');
+  nearest('Gần nhất (theo Mốc Demo)');
 
   final String label;
   const SortOption(this.label);
+}
+
+enum DemoLocation {
+  none('Chờ GPS thật (Vô hiệu hóa)', null, null),
+  benThanh('Mốc Demo: Chợ Bến Thành (TP.HCM)', 10.7721, 106.6983),
+  hoanKiem('Mốc Demo: Hồ Hoàn Kiếm (Hà Nội)', 21.0285, 105.8542),
+  songHan('Mốc Demo: Cầu Sông Hàn (Đà Nẵng)', 16.0718, 108.2268);
+
+  final String label;
+  final double? latitude;
+  final double? longitude;
+
+  const DemoLocation(this.label, this.latitude, this.longitude);
+
+  bool get isAvailable => latitude != null && longitude != null;
 }
 
 class SpaSearchFilter {
@@ -21,6 +36,7 @@ class SpaSearchFilter {
   final int? minDuration;
   final int? maxDuration;
   final double? maxDistanceKm;
+  final DemoLocation demoLocation;
   final SortOption sortBy;
 
   static const double defaultMinPrice = 0.0;
@@ -38,6 +54,7 @@ class SpaSearchFilter {
     this.minDuration,
     this.maxDuration,
     this.maxDistanceKm,
+    this.demoLocation = DemoLocation.none,
     this.sortBy = SortOption.relevance,
   });
 
@@ -58,8 +75,10 @@ class SpaSearchFilter {
     bool clearDuration = false,
     double? maxDistanceKm,
     bool clearDistance = false,
+    DemoLocation? demoLocation,
     SortOption? sortBy,
   }) {
+    final effectiveDemoLocation = demoLocation ?? this.demoLocation;
     return SpaSearchFilter(
       keyword: keyword ?? this.keyword,
       provinceCode: clearProvince ? null : (provinceCode ?? this.provinceCode),
@@ -70,7 +89,10 @@ class SpaSearchFilter {
       minRating: clearMinRating ? null : (minRating ?? this.minRating),
       minDuration: clearDuration ? null : (minDuration ?? this.minDuration),
       maxDuration: clearDuration ? null : (maxDuration ?? this.maxDuration),
-      maxDistanceKm: clearDistance ? null : (maxDistanceKm ?? this.maxDistanceKm),
+      maxDistanceKm: (clearDistance || !effectiveDemoLocation.isAvailable)
+          ? null
+          : (maxDistanceKm ?? this.maxDistanceKm),
+      demoLocation: effectiveDemoLocation,
       sortBy: sortBy ?? this.sortBy,
     );
   }
@@ -84,7 +106,9 @@ class SpaSearchFilter {
     if (minPrice > defaultMinPrice || maxPrice < defaultMaxPrice) count++;
     if (minRating != null && minRating! > 0) count++;
     if (minDuration != null || maxDuration != null) count++;
-    if (maxDistanceKm != null && maxDistanceKm! > 0) count++;
+    if (demoLocation.isAvailable && maxDistanceKm != null && maxDistanceKm! > 0) {
+      count++;
+    }
     if (sortBy != SortOption.relevance) count++;
     return count;
   }
@@ -95,6 +119,7 @@ class SpaSearchFilter {
       keyword: keyword,
       minPrice: defaultMinPrice,
       maxPrice: defaultMaxPrice,
+      demoLocation: DemoLocation.none,
       sortBy: SortOption.relevance,
     );
   }
@@ -119,6 +144,7 @@ class SpaSearchFilter {
           minDuration == other.minDuration &&
           maxDuration == other.maxDuration &&
           maxDistanceKm == other.maxDistanceKm &&
+          demoLocation == other.demoLocation &&
           sortBy == other.sortBy;
 
   @override
@@ -133,6 +159,7 @@ class SpaSearchFilter {
         minDuration,
         maxDuration,
         maxDistanceKm,
+        demoLocation,
         sortBy,
       );
 }

@@ -221,61 +221,106 @@ class FilterBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // 6. BỘ LỌC KHOẢNG CÁCH (Khóa trong chế độ Demo)
+                // 6. BỘ LỌC KHOẢNG CÁCH (Hỗ trợ chọn Mốc Demo hoặc tạm vô hiệu hóa chờ GPS)
                 _buildSectionCard(
-                  title: '6. Khoảng cách (Tạm khóa Demo)',
-                  subtitle: 'Tính năng cần quyền định vị GPS thật trên thiết bị',
+                  title: '6. Bộ lọc khoảng cách',
+                  subtitle: draftFilter.demoLocation.isAvailable
+                      ? 'Khoảng cách được tính từ: ${draftFilter.demoLocation.label}'
+                      : 'Tạm vô hiệu hóa nếu chưa có GPS thật (hoặc chọn Mốc Demo bên dưới)',
                   child: Column(
                     crossAxisAlignment: CrossAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondaryLight,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.secondaryDark),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.lock_clock_rounded, size: 16, color: AppColors.accent),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Bộ lọc bán kính GPS sẽ tự động mở khi tích hợp định vị thiết bị thật.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.primaryDark,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
+                      const Text(
+                        'Điểm tham chiếu khoảng cách:',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        children: [1, 3, 5, 10, 20].map((km) {
-                          return Opacity(
-                            opacity: 0.5,
-                            child: ChoiceChip(
-                              label: Text('$km km'),
-                              selected: false,
-                              onSelected: null, // Khóa chức năng
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<DemoLocation>(
+                        value: draftFilter.demoLocation,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        items: DemoLocation.values.map((loc) {
+                          return DropdownMenuItem(
+                            value: loc,
+                            child: Text(loc.label, style: const TextStyle(fontSize: 13)),
+                          );
+                        }).toList(),
+                        onChanged: (loc) {
+                          if (loc != null) {
+                            viewModel.updateDraftDemoLocation(loc);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      if (!draftFilter.demoLocation.isAvailable) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondaryLight,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.secondaryDark),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.info_outline_rounded, size: 16, color: AppColors.accent),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Khoảng cách từ vị trí hiện tại tạm vô hiệu hóa cho đến khi có GPS thật. Bạn có thể chọn mốc Demo ở trên để thử nghiệm tính năng lọc theo bán kính.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.primaryDark,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        const Text(
+                          'Bán kính tối đa từ mốc đã chọn:',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [1.0, 3.0, 5.0, 10.0, 20.0].map((km) {
+                            final isSelected = draftFilter.maxDistanceKm == km;
+                            return ChoiceChip(
+                              label: Text('${km.toInt()} km'),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                viewModel.updateDraftDistance(km);
+                              },
+                              selectedColor: AppColors.primary,
                               backgroundColor: AppColors.surface,
-                              labelStyle: const TextStyle(
+                              labelStyle: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textMuted,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                color: isSelected ? Colors.white : AppColors.text,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: const BorderSide(color: AppColors.border),
+                                side: BorderSide(
+                                  color: isSelected ? AppColors.primary : AppColors.border,
+                                ),
                               ),
                               showCheckmark: false,
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ],
                   ),
                 ),

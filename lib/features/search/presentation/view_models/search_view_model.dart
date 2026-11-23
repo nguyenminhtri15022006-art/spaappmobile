@@ -135,7 +135,7 @@ class SearchViewModel extends StateNotifier<SearchState> {
   }
 
   /// Cập nhật Tỉnh/Thành phố trong Draft
-  /// LƯU Ý QUAN TRỌNG: Đổi tỉnh/thành phải tự động RESET Xã/Phường đã chọn!
+  /// Khi đổi hoặc xóa Tỉnh/Thành: Tự động reset Xã/Phường
   void updateDraftProvince(String? provinceCode) {
     final updated = state.draftFilter.copyWith(
       provinceCode: provinceCode,
@@ -146,10 +146,39 @@ class SearchViewModel extends StateNotifier<SearchState> {
   }
 
   /// Cập nhật Xã/Phường trong Draft
+  /// Yêu cầu nghiệp vụ: Nếu chọn xã/phường thì phải có tỉnh/thành tương ứng
   void updateDraftWard(String? wardCode) {
+    if (wardCode != null &&
+        (state.draftFilter.provinceCode == null ||
+            state.draftFilter.provinceCode!.isEmpty)) {
+      // Không thể chọn xã/phường khi chưa chọn tỉnh/thành
+      return;
+    }
     final updated = state.draftFilter.copyWith(
       wardCode: wardCode,
       clearWard: wardCode == null,
+    );
+    state = state.copyWith(draftFilter: updated);
+  }
+
+  /// Cập nhật Mốc Demo khoảng cách (hoặc chọn Vô hiệu hóa chờ GPS thật)
+  void updateDraftDemoLocation(DemoLocation location) {
+    final updated = state.draftFilter.copyWith(
+      demoLocation: location,
+      clearDistance: !location.isAvailable,
+    );
+    state = state.copyWith(draftFilter: updated);
+  }
+
+  /// Cập nhật Khoảng cách bán kính (chỉ cho phép khi Mốc Demo có sẵn)
+  void updateDraftDistance(double? maxDistanceKm) {
+    if (!state.draftFilter.demoLocation.isAvailable) {
+      return;
+    }
+    final isSame = state.draftFilter.maxDistanceKm == maxDistanceKm;
+    final updated = state.draftFilter.copyWith(
+      maxDistanceKm: isSame ? null : maxDistanceKm,
+      clearDistance: isSame || maxDistanceKm == null,
     );
     state = state.copyWith(draftFilter: updated);
   }
@@ -218,6 +247,16 @@ class SearchViewModel extends StateNotifier<SearchState> {
         minPrice: validDraft.maxPrice,
         maxPrice: validDraft.minPrice,
       );
+    }
+
+    // Nếu không có tỉnh/thành thì phường/xã không hợp lệ
+    if (validDraft.provinceCode == null || validDraft.provinceCode!.isEmpty) {
+      validDraft = validDraft.copyWith(clearWard: true);
+    }
+
+    // Nếu không chọn Mốc Demo thì xóa khoảng cách
+    if (!validDraft.demoLocation.isAvailable) {
+      validDraft = validDraft.copyWith(clearDistance: true);
     }
 
     // Đảm bảo từ khóa trên thanh tìm kiếm được đồng bộ vào filter

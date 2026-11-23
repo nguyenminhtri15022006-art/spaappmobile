@@ -53,10 +53,13 @@ class MockSearchRepository implements SearchRepository {
       // Nếu không lọc địa điểm, toàn bộ chi nhánh đều được tính
       var effectiveBranches = hasLocationFilter ? matchingBranches : spa.branches;
 
-      // Kiểm tra khoảng cách thực tế so với tọa độ tham chiếu trung tâm (10.7769, 106.7009)
-      if (filter.maxDistanceKm != null && filter.maxDistanceKm! > 0) {
-        const refLat = 10.7769;
-        const refLng = 106.7009;
+      // Kiểm tra khoảng cách: CHỈ ÁP DỤNG KHI người dùng chủ động chọn Mốc Demo cụ thể
+      // Không tự ý lấy một tọa độ ngầm làm vị trí hiện tại
+      if (filter.demoLocation.isAvailable &&
+          filter.maxDistanceKm != null &&
+          filter.maxDistanceKm! > 0) {
+        final refLat = filter.demoLocation.latitude!;
+        final refLng = filter.demoLocation.longitude!;
         effectiveBranches = effectiveBranches.where((b) {
           final dist = _calculateHaversineDistance(refLat, refLng, b.latitude, b.longitude);
           return dist <= filter.maxDistanceKm!;
@@ -121,13 +124,13 @@ class MockSearchRepository implements SearchRepository {
     }
 
     // 4. Sắp xếp kết quả theo sortBy
-    _sortResults(results, filter.sortBy, filter.keyword);
+    _sortResults(results, filter);
 
     return results;
   }
 
-  void _sortResults(List<SpaServiceSearchResult> list, SortOption sortBy, String keyword) {
-    switch (sortBy) {
+  void _sortResults(List<SpaServiceSearchResult> list, SpaSearchFilter filter) {
+    switch (filter.sortBy) {
       case SortOption.priceAsc:
         list.sort((a, b) => a.service.price.compareTo(b.service.price));
         break;
@@ -145,18 +148,19 @@ class MockSearchRepository implements SearchRepository {
         list.sort((a, b) => a.service.durationMinutes.compareTo(b.service.durationMinutes));
         break;
       case SortOption.nearest:
-        // Sắp xếp theo khoảng cách thực tế nhỏ nhất từ các chi nhánh tới tọa độ tham chiếu trung tâm
-        const refLat = 10.7769;
-        const refLng = 106.7009;
-        list.sort((a, b) {
-          final distA = _getMinDistanceKm(a.matchingBranches, refLat, refLng);
-          final distB = _getMinDistanceKm(b.matchingBranches, refLat, refLng);
-          return distA.compareTo(distB);
-        });
+        if (filter.demoLocation.isAvailable) {
+          final refLat = filter.demoLocation.latitude!;
+          final refLng = filter.demoLocation.longitude!;
+          list.sort((a, b) {
+            final distA = _getMinDistanceKm(a.matchingBranches, refLat, refLng);
+            final distB = _getMinDistanceKm(b.matchingBranches, refLat, refLng);
+            return distA.compareTo(distB);
+          });
+        }
         break;
       case SortOption.relevance:
-        if (keyword.trim().isNotEmpty) {
-          final query = VietnameseUtils.normalize(keyword);
+        if (filter.keyword.trim().isNotEmpty) {
+          final query = VietnameseUtils.normalize(filter.keyword);
           list.sort((a, b) {
             final aName = VietnameseUtils.normalize(a.service.name);
             final bName = VietnameseUtils.normalize(b.service.name);

@@ -30,9 +30,9 @@ class BookingFormScreen extends ConsumerStatefulWidget {
 }
 
 class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
-  DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
-  String _selectedTime = '14:30';
-  final TextEditingController _notesController = TextEditingController();
+  late DateTime _selectedDate;
+  late String _selectedTime;
+  late final TextEditingController _notesController;
 
   final List<String> _timeSlots = [
     '09:00',
@@ -47,14 +47,35 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   @override
   void initState() {
     super.initState();
-    // Khởi tạo draft trong provider để lưu trạng thái
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(bookingDraftProvider.notifier).initDraft(
-            spaId: widget.spaId,
-            serviceId: widget.serviceId,
-            branchId: widget.branchId,
-            initialDate: _selectedDate,
-            initialTime: _selectedTime,
+    final existingDraft = ref.read(bookingDraftProvider);
+    final isSameDraft = existingDraft.spaId == widget.spaId &&
+        existingDraft.serviceId == widget.serviceId &&
+        existingDraft.branchId == widget.branchId;
+
+    if (isSameDraft && existingDraft.selectedDate != null) {
+      // Giữ nguyên ngày, giờ và ghi chú đã chọn khi người dùng quay lại (ví dụ sau khi đăng nhập)
+      _selectedDate = existingDraft.selectedDate!;
+      _selectedTime = existingDraft.selectedTime ?? '14:30';
+      _notesController = TextEditingController(text: existingDraft.notes);
+    } else {
+      _selectedDate = DateTime.now().add(const Duration(days: 1));
+      _selectedTime = '14:30';
+      _notesController = TextEditingController();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(bookingDraftProvider.notifier).initDraft(
+              spaId: widget.spaId,
+              serviceId: widget.serviceId,
+              branchId: widget.branchId,
+              initialDate: _selectedDate,
+              initialTime: _selectedTime,
+            );
+      });
+    }
+
+    _notesController.addListener(() {
+      ref.read(bookingDraftProvider.notifier).updateCustomerInfo(
+            notes: _notesController.text,
           );
     });
   }
@@ -94,9 +115,11 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   void _proceedToConfirmation() {
     final authState = ref.read(authViewModelProvider);
 
-    // Lưu notes vào draft
+    // Lưu notes và thông tin người dùng vào draft
     ref.read(bookingDraftProvider.notifier).updateCustomerInfo(
           notes: _notesController.text,
+          name: authState.user?.name,
+          phone: authState.user?.phone,
         );
 
     // Kiểm tra đăng nhập
@@ -123,7 +146,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   @override
   Widget build(BuildContext context) {
     final spaList = MockSpaData.getSpas();
-    
+
     // Kiểm tra ID hợp lệ, hiển thị NotFoundView nếu không tìm thấy
     final spaMatches = spaList.where((s) => s.id == widget.spaId);
     if (spaMatches.isEmpty) {
@@ -201,7 +224,8 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                           width: 54,
                           height: 54,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.spa, color: AppColors.primary),
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.spa, color: AppColors.primary),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -236,12 +260,14 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.storefront_rounded, size: 16, color: AppColors.textMuted),
+                      const Icon(Icons.storefront_rounded,
+                          size: 16, color: AppColors.textMuted),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           '${branch.name} (${branch.address})',
-                          style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                          style: const TextStyle(
+                              fontSize: 12.5, color: AppColors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -254,11 +280,13 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.schedule_rounded, size: 16, color: AppColors.textMuted),
+                          const Icon(Icons.schedule_rounded,
+                              size: 16, color: AppColors.textMuted),
                           const SizedBox(width: 6),
                           Text(
                             '${service.durationMinutes} phút',
-                            style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                            style: const TextStyle(
+                                fontSize: 12.5, color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -280,7 +308,8 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
               onTap: () => _selectDatePicker(context),
               borderRadius: BorderRadius.circular(14),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
@@ -288,7 +317,8 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 22),
+                    const Icon(Icons.calendar_month_rounded,
+                        color: AppColors.primary, size: 22),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -335,7 +365,8 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                   backgroundColor: AppColors.surface,
                   labelStyle: TextStyle(
                     fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                     color: isSelected ? Colors.white : AppColors.text,
                   ),
                   shape: RoundedRectangleBorder(
@@ -351,13 +382,15 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
             const SizedBox(height: 24),
 
             // 3. GHI CHÚ
-            const Text('3. Yêu cầu thêm (tùy chọn)', style: AppTextStyles.heading3),
+            const Text('3. Yêu cầu thêm (tùy chọn)',
+                style: AppTextStyles.heading3),
             const SizedBox(height: 10),
             TextField(
               controller: _notesController,
               maxLines: 3,
               decoration: const InputDecoration(
-                hintText: 'Ví dụ: Cần KTV có tay nghề cao, massage giảm đau vùng cổ...',
+                hintText:
+                    'Ví dụ: Cần KTV có tay nghề cao, massage giảm đau vùng cổ...',
               ),
             ),
             const SizedBox(height: 32),
@@ -371,7 +404,9 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Tiếp tục xác nhận', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    Text('Tiếp tục xác nhận',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700)),
                     SizedBox(width: 8),
                     Icon(Icons.arrow_forward_rounded, size: 18),
                   ],

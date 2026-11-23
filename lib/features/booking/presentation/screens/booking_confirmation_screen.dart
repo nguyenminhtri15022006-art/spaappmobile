@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/data/mock_spa_data.dart';
+import '../../../../shared/widgets/not_found_view.dart';
 import '../../../auth/presentation/view_models/auth_view_model.dart';
 import '../view_models/booking_draft_view_model.dart';
 import '../view_models/my_bookings_view_model.dart';
@@ -73,18 +74,44 @@ class _BookingConfirmationScreenState
     final user = ref.watch(authViewModelProvider).user;
 
     final spaList = MockSpaData.getSpas();
-    final spa = spaList.firstWhere(
-      (s) => s.id == widget.spaId,
-      orElse: () => spaList.first,
-    );
-    final service = spa.services.firstWhere(
-      (s) => s.id == widget.serviceId,
-      orElse: () => spa.services.first,
-    );
-    final branch = spa.branches.firstWhere(
-      (b) => b.id == widget.branchId,
-      orElse: () => spa.branches.first,
-    );
+    final spaMatches = spaList.where((s) => s.id == widget.spaId);
+    if (spaMatches.isEmpty) {
+      return const Scaffold(
+        body: SafeArea(
+          child: NotFoundView(
+            title: 'Không tìm thấy Spa',
+            message: 'Mã Spa không tồn tại hoặc dữ liệu đã bị xóa.',
+          ),
+        ),
+      );
+    }
+    final spa = spaMatches.first;
+
+    final serviceMatches = spa.services.where((s) => s.id == widget.serviceId);
+    if (serviceMatches.isEmpty) {
+      return const Scaffold(
+        body: SafeArea(
+          child: NotFoundView(
+            title: 'Không tìm thấy dịch vụ',
+            message: 'Dịch vụ này không thuộc danh mục của Spa đã chọn.',
+          ),
+        ),
+      );
+    }
+    final service = serviceMatches.first;
+
+    final branchMatches = spa.branches.where((b) => b.id == widget.branchId);
+    if (branchMatches.isEmpty) {
+      return const Scaffold(
+        body: SafeArea(
+          child: NotFoundView(
+            title: 'Không tìm thấy chi nhánh',
+            message: 'Chi nhánh đã chọn không khả dụng.',
+          ),
+        ),
+      );
+    }
+    final branch = branchMatches.first;
 
     final bookingDate = draft.selectedDate ?? DateTime.now().add(const Duration(days: 1));
     final dateFormat = DateFormat('EEEE, dd/MM/yyyy', 'vi_VN');
