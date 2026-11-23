@@ -172,5 +172,15 @@ void main() {
       final nullService = await repository.getServiceById('srv_invalid_9999');
       expect(nullService, isNull);
     });
+
+    test('13. Lọc theo tỉnh Nghệ An và phường Trường Thi', () async {
+      final results = await repository.search(
+        const SpaSearchFilter(provinceCode: 'VN-22', wardCode: 'VN-22-TT'),
+      );
+      expect(results.isNotEmpty, isTrue);
+      for (final res in results) {
+        expect(res.matchingBranches.any((b) => b.provinceCode == 'VN-22' && b.wardCode == 'VN-22-TT'), isTrue);
+      }
+    });
   });
 }

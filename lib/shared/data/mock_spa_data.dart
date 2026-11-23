@@ -341,6 +341,17 @@ class MockSpaData {
             longitude: 108.2223,
             phone: '0977889902',
           ),
+          const SpaBranch(
+            id: 'br_an_vinh',
+            spaId: 'spa_annam',
+            name: 'An Nam Trường Thi (TP. Vinh)',
+            address: '88 Hồ Tùng Mậu, Phường Trường Thi, TP. Vinh',
+            provinceCode: 'VN-22',
+            wardCode: 'VN-22-TT',
+            latitude: 18.6732,
+            longitude: 105.6811,
+            phone: '0977889903',
+          ),
         ],
         services: [
           const SpaService(

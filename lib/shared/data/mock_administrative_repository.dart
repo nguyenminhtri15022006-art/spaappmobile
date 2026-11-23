@@ -37,6 +37,12 @@ class MockAdministrativeRepository implements AdministrativeRepository {
       type: AdministrativeType.province,
       aliases: ['Dong Nai', 'Bien Hoa'],
     ),
+    AdministrativeUnit(
+      code: 'VN-22',
+      name: 'Nghệ An',
+      type: AdministrativeType.province,
+      aliases: ['Nghe An', 'TP Vinh', 'Vinh', 'Xu Nghe'],
+    ),
   ];
 
   static const List<AdministrativeUnit> _mockWards = [
@@ -158,6 +164,36 @@ class MockAdministrativeRepository implements AdministrativeRepository {
       type: AdministrativeType.ward,
       parentCode: 'VN-39',
       aliases: ['Thành phố Biên Hòa', 'Long Hung', 'Aqua City'],
+    ),
+
+    // Nghệ An
+    AdministrativeUnit(
+      code: 'VN-22-TT',
+      name: 'Phường Trường Thi',
+      type: AdministrativeType.ward,
+      parentCode: 'VN-22',
+      aliases: ['TP Vinh', 'Thành phố Vinh', 'Truong Thi', 'Quảng trường Hồ Chí Minh'],
+    ),
+    AdministrativeUnit(
+      code: 'VN-22-QT',
+      name: 'Phường Quang Trung',
+      type: AdministrativeType.ward,
+      parentCode: 'VN-22',
+      aliases: ['TP Vinh', 'Thành phố Vinh', 'Quang Trung'],
+    ),
+    AdministrativeUnit(
+      code: 'VN-22-HD',
+      name: 'Phường Hưng Dũng',
+      type: AdministrativeType.ward,
+      parentCode: 'VN-22',
+      aliases: ['TP Vinh', 'Thành phố Vinh', 'Hung Dung'],
+    ),
+    AdministrativeUnit(
+      code: 'VN-22-NH',
+      name: 'Phường Nghi Hương',
+      type: AdministrativeType.ward,
+      parentCode: 'VN-22',
+      aliases: ['Thị xã Cửa Lò', 'Thi xa Cua Lo', 'Cua Lo', 'Bien Cua Lo', 'Nghi Huong'],
     ),
   ];
 
