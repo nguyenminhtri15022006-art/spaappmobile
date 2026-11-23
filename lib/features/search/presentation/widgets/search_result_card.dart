@@ -4,6 +4,7 @@ import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../models/spa_service_search_result.dart';
 import '../../../../shared/widgets/badge_tag.dart';
+import '../../../../shared/widgets/favorite_button.dart';
 import '../../../../shared/widgets/star_rating.dart';
 
 class SearchResultCard extends StatelessWidget {
@@ -161,6 +162,7 @@ class SearchResultCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      FavoriteButton(spaId: spa.id, size: 18),
                     ],
                   ),
                   const SizedBox(height: 6),

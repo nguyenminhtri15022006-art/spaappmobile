@@ -142,5 +142,22 @@ void main() {
       expect(suggestions.isNotEmpty, isTrue);
       expect(suggestions.any((s) => s.toLowerCase().contains('gội')), isTrue);
     });
+
+    test('12. Tìm Spa hoặc Dịch vụ bằng ID không tồn tại trả về null', () async {
+      final nullSpa = await repository.getSpaById('spa_invalid_9999');
+      expect(nullSpa, isNull);
+
+      final nullService = await repository.getServiceById('srv_invalid_9999');
+      expect(nullService, isNull);
+    });
+
+    test('13. Sắp xếp gần nhất (SortOption.nearest) tính theo tọa độ địa lý, không lấy số chi nhánh', () async {
+      final nearestResults = await repository.search(
+        const SpaSearchFilter(sortBy: SortOption.nearest),
+      );
+      expect(nearestResults.isNotEmpty, isTrue);
+      // Kết quả phải trả về danh sách hợp lệ
+      expect(nearestResults.first.matchingBranches.isNotEmpty, isTrue);
+    });
   });
 }

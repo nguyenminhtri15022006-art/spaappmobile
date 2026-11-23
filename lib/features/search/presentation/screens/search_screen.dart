@@ -13,7 +13,9 @@ import '../widgets/search_result_card.dart';
 import '../widgets/search_suggestions_overlay.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key});
+  final String? initialCategoryId;
+
+  const SearchScreen({super.key, this.initialCategoryId});
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -28,6 +30,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.initState();
     final currentQuery = ref.read(searchViewModelProvider).query;
     _textController = TextEditingController(text: currentQuery);
+
+    if (widget.initialCategoryId != null && widget.initialCategoryId!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(searchViewModelProvider.notifier).quickFilterCategory(widget.initialCategoryId);
+      });
+    }
   }
 
   @override

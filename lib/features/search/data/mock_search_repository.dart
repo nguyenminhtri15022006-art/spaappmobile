@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'search_repository.dart';
 import '../models/spa_search_filter.dart';
 import '../models/spa_service_search_result.dart';
@@ -50,7 +51,21 @@ class MockSearchRepository implements SearchRepository {
       }
 
       // Nếu không lọc địa điểm, toàn bộ chi nhánh đều được tính
-      final effectiveBranches = hasLocationFilter ? matchingBranches : spa.branches;
+      var effectiveBranches = hasLocationFilter ? matchingBranches : spa.branches;
+
+      // Kiểm tra khoảng cách thực tế so với tọa độ tham chiếu trung tâm (10.7769, 106.7009)
+      if (filter.maxDistanceKm != null && filter.maxDistanceKm! > 0) {
+        const refLat = 10.7769;
+        const refLng = 106.7009;
+        effectiveBranches = effectiveBranches.where((b) {
+          final dist = _calculateHaversineDistance(refLat, refLng, b.latitude, b.longitude);
+          return dist <= filter.maxDistanceKm!;
+        }).toList();
+
+        if (effectiveBranches.isEmpty) {
+          continue;
+        }
+      }
 
       // 3. Lọc danh sách dịch vụ của Spa
       for (final service in spa.services) {
@@ -130,8 +145,14 @@ class MockSearchRepository implements SearchRepository {
         list.sort((a, b) => a.service.durationMinutes.compareTo(b.service.durationMinutes));
         break;
       case SortOption.nearest:
-        // Sắp xếp theo thứ tự địa bàn (demo)
-        list.sort((a, b) => a.matchingBranchesCount.compareTo(b.matchingBranchesCount));
+        // Sắp xếp theo khoảng cách thực tế nhỏ nhất từ các chi nhánh tới tọa độ tham chiếu trung tâm
+        const refLat = 10.7769;
+        const refLng = 106.7009;
+        list.sort((a, b) {
+          final distA = _getMinDistanceKm(a.matchingBranches, refLat, refLng);
+          final distB = _getMinDistanceKm(b.matchingBranches, refLat, refLng);
+          return distA.compareTo(distB);
+        });
         break;
       case SortOption.relevance:
         if (keyword.trim().isNotEmpty) {
@@ -214,5 +235,23 @@ class MockSearchRepository implements SearchRepository {
       }
     }
     return null;
+  }
+
+  static double _getMinDistanceKm(List<SpaBranch> branches, double refLat, double refLng) {
+    if (branches.isEmpty) return double.infinity;
+    double minKm = double.infinity;
+    for (final b in branches) {
+      final km = _calculateHaversineDistance(refLat, refLng, b.latitude, b.longitude);
+      if (km < minKm) minKm = km;
+    }
+    return minKm;
+  }
+
+  static double _calculateHaversineDistance(double lat1, double lon1, double lat2, double lon2) {
+    const p = 0.017453292519943295; // Math.PI / 180
+    final a = 0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) * math.cos(lat2 * p) * (1 - math.cos((lon2 - lon1) * p)) / 2;
+    return 12742 * math.asin(math.sqrt(a)); // 2 * R, R = 6371 km
   }
 }

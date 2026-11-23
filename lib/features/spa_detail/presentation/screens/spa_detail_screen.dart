@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/utils/currency_formatter.dart';
 import '../../../shared/data/mock_spa_data.dart';
 import '../../../shared/models/spa.dart';
 import '../../../shared/models/spa_service.dart';
+import '../../../shared/widgets/favorite_button.dart';
+import '../../../shared/widgets/not_found_view.dart';
+import '../../../shared/widgets/spa_service_card.dart';
 import '../../../shared/widgets/star_rating.dart';
 
 class SpaDetailScreen extends StatelessWidget {
@@ -21,10 +23,20 @@ class SpaDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spaList = MockSpaData.getSpas();
-    final spa = spaList.firstWhere(
-      (s) => s.id == spaId,
-      orElse: () => spaList.first,
-    );
+    final spaMatches = spaList.where((s) => s.id == spaId);
+
+    // Kiểm tra ID Spa hợp lệ
+    if (spaMatches.isEmpty) {
+      return const Scaffold(
+        body: SafeArea(
+          child: NotFoundView(
+            title: 'Không tìm thấy Spa',
+            message: 'Mã Spa không tồn tại hoặc cơ sở đã ngưng hoạt động.',
+          ),
+        ),
+      );
+    }
+    final spa = spaMatches.first;
 
     // Tìm dịch vụ được highlight
     SpaService? highlightedService;
@@ -42,7 +54,7 @@ class SpaDetailScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          // Sliver App Bar với ảnh bìa Spa
+          // Sliver App Bar với ảnh bìa Spa & Nút yêu thích
           SliverAppBar(
             expandedHeight: 220,
             pinned: true,
@@ -59,6 +71,16 @@ class SpaDetailScreen extends StatelessWidget {
               ),
               onPressed: () => context.pop(),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: FavoriteButton(
+                  spaId: spa.id,
+                  size: 20,
+                  showBackground: true,
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 spa.name,
@@ -146,19 +168,19 @@ class SpaDetailScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.secondaryLight.withOpacity(0.5),
+                        color: AppColors.secondaryLight.withOpacity(0.4),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.accent, width: 1.5),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAlignment.start,
                         children: [
-                          Row(
+                          const Row(
                             children: [
-                              const Icon(Icons.auto_awesome, color: AppColors.accent, size: 18),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'DỊCH VỤ BẠN VỪA CHỌN TỪ TÌM KIẾM',
+                              Icon(Icons.auto_awesome, color: AppColors.accent, size: 18),
+                              SizedBox(width: 6),
+                              Text(
+                                'DỊCH VỤ BẠN VỪA TÌM KIẾM',
                                 style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,
@@ -169,11 +191,16 @@ class SpaDetailScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          _buildServiceCard(
-                            context: context,
+                          SpaServiceCard(
                             spa: spa,
                             service: highlightedService,
                             isHighlighted: true,
+                            onViewDetail: () {
+                              context.push('/spa/${spa.id}/service/${highlightedService!.id}');
+                            },
+                            onBook: () {
+                              context.push('/spa/${spa.id}/branch-select?serviceId=${highlightedService!.id}');
+                            },
                           ),
                         ],
                       ),
@@ -196,11 +223,16 @@ class SpaDetailScreen extends StatelessWidget {
                   ...spa.services.map(
                     (srv) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildServiceCard(
-                        context: context,
+                      child: SpaServiceCard(
                         spa: spa,
                         service: srv,
                         isHighlighted: srv.id == initialSelectedServiceId,
+                        onViewDetail: () {
+                          context.push('/spa/${spa.id}/service/${srv.id}');
+                        },
+                        onBook: () {
+                          context.push('/spa/${spa.id}/branch-select?serviceId=${srv.id}');
+                        },
                       ),
                     ),
                   ),
@@ -296,94 +328,6 @@ class SpaDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildServiceCard({
-    required BuildContext context,
-    required Spa spa,
-    required SpaService service,
-    bool isHighlighted = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isHighlighted ? AppColors.accent : AppColors.border,
-          width: isHighlighted ? 1.5 : 1,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAlignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              service.imageUrl,
-              width: 75,
-              height: 75,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 75,
-                height: 75,
-                color: AppColors.secondaryLight,
-                child: const Icon(Icons.spa, color: AppColors.primary),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAlignment.start,
-              children: [
-                Text(
-                  service.name,
-                  style: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.schedule, size: 13, color: AppColors.textMuted),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${service.durationMinutes} phút',
-                      style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  CurrencyFormatter.format(service.price),
-                  style: AppTextStyles.price.copyWith(fontSize: 15),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Chuyển sang màn hình chọn chi nhánh để đặt lịch
-              context.push(
-                '/spa/${spa.id}/branch-select?serviceId=${service.id}',
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isHighlighted ? AppColors.accent : AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              elevation: 0,
-            ),
-            child: const Text('Đặt lịch'),
           ),
         ],
       ),

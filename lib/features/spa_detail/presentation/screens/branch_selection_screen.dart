@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/data/mock_spa_data.dart';
 import '../../../shared/models/spa_branch.dart';
+import '../../../shared/widgets/branch_card.dart';
+import '../../../shared/widgets/not_found_view.dart';
 import '../../search/presentation/view_models/search_view_model.dart';
 
 class BranchSelectionScreen extends ConsumerWidget {
@@ -24,15 +26,32 @@ class BranchSelectionScreen extends ConsumerWidget {
     );
 
     final spaList = MockSpaData.getSpas();
-    final spa = spaList.firstWhere(
-      (s) => s.id == spaId,
-      orElse: () => spaList.first,
-    );
+    final spaMatches = spaList.where((s) => s.id == spaId);
 
-    final service = spa.services.firstWhere(
-      (s) => s.id == serviceId,
-      orElse: () => spa.services.first,
-    );
+    if (spaMatches.isEmpty) {
+      return const Scaffold(
+        body: SafeArea(
+          child: NotFoundView(
+            title: 'Không tìm thấy Spa',
+            message: 'Thông tin Spa không tồn tại.',
+          ),
+        ),
+      );
+    }
+    final spa = spaMatches.first;
+
+    final serviceMatches = spa.services.where((s) => s.id == serviceId);
+    if (serviceMatches.isEmpty) {
+      return const Scaffold(
+        body: SafeArea(
+          child: NotFoundView(
+            title: 'Không tìm thấy dịch vụ',
+            message: 'Dịch vụ này không thuộc danh mục Spa đã chọn.',
+          ),
+        ),
+      );
+    }
+    final service = serviceMatches.first;
 
     // Sắp xếp ưu tiên các chi nhánh thuộc tỉnh/thành đã lọc (nếu có)
     final sortedBranches = List<SpaBranch>.from(spa.branches);
@@ -124,88 +143,15 @@ class BranchSelectionScreen extends ConsumerWidget {
               final isMatchingFilter = searchFilter.provinceCode != null &&
                   branch.provinceCode == searchFilter.provinceCode;
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isMatchingFilter ? AppColors.primary : AppColors.border,
-                    width: isMatchingFilter ? 1.5 : 1,
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          branch.name,
-                          style: const TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.text,
-                          ),
-                        ),
-                      ),
-                      if (isMatchingFilter)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Phù hợp vị trí lọc',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Column(
-                      crossAxisAlignment: CrossAlignment.start,
-                      children: [
-                        Text(
-                          branch.address,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Hotline: ${branch.phone}',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () {
-                      context.push(
-                        '/booking?spaId=${spa.id}&serviceId=${service.id}&branchId=${branch.id}',
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
-                    ),
-                    child: const Text('Chọn'),
-                  ),
-                ),
+              return BranchCard(
+                branch: branch,
+                isMatchingFilter: isMatchingFilter,
+                actionText: 'Chọn',
+                onSelect: () {
+                  context.push(
+                    '/booking?spaId=${spa.id}&serviceId=${service.id}&branchId=${branch.id}',
+                  );
+                },
               );
             }),
           ],

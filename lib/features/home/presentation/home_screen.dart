@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/data/mock_spa_data.dart';
+import '../../../shared/widgets/app_drawer.dart';
+import '../../../shared/widgets/favorite_button.dart';
+import '../../notifications/presentation/view_models/notifications_view_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadNotificationCount = ref.watch(
+      notificationsViewModelProvider.select((s) => s.unreadCount),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const AppDrawer(),
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded, size: 26, color: AppColors.text),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            tooltip: 'Mở menu',
+          ),
+        ),
         title: const Column(
           crossAxisAlignment: CrossAlignment.start,
           children: [
@@ -27,7 +43,7 @@ class HomeScreen extends StatelessWidget {
             Text(
               'Spa Marketplace',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 19,
                 fontWeight: FontWeight.w700,
                 color: AppColors.text,
               ),
@@ -35,9 +51,37 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () {},
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded, size: 24),
+                onPressed: () => context.push('/notifications'),
+                tooltip: 'Thông báo',
+              ),
+              if (unreadNotificationCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '$unreadNotificationCount',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(width: 8),
         ],
@@ -82,7 +126,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Banner Luxury Wellness
             Container(
@@ -160,13 +204,13 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
-            // Danh mục nổi bật
+            // Danh mục dịch vụ (Bấm danh mục mở SearchScreen với danh mục đó được chọn!)
             const Text('Danh mục dịch vụ', style: AppTextStyles.heading3),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 100,
+              height: 105,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: MockSpaData.categories.length,
@@ -174,7 +218,10 @@ class HomeScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final cat = MockSpaData.categories[index];
                   return GestureDetector(
-                    onTap: () => context.push('/search'),
+                    onTap: () {
+                      // Mở SearchScreen với danh mục được chọn sẵn
+                      context.push('/search?categoryId=${cat.id}');
+                    },
                     child: Column(
                       children: [
                         Container(
@@ -198,7 +245,7 @@ class HomeScreen extends StatelessWidget {
                             size: 28,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         SizedBox(
                           width: 75,
                           child: Text(
@@ -219,12 +266,83 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
+            const SizedBox(height: 20),
+
+            // Quick Access: Bản đồ & Lịch hẹn
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => context.push('/map'),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.near_me_rounded, color: AppColors.primary, size: 24),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAlignment.start,
+                            children: [
+                              Text('Bản đồ Spa', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                              Text('Tìm chi nhánh gần bạn', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => context.push('/my-bookings'),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.calendar_today_rounded, color: AppColors.accent, size: 22),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAlignment.start,
+                            children: [
+                              Text('Lịch hẹn', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                              Text('Xem trạng thái đặt chỗ', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
 
             // Spa nổi bật
-            const Text('Spa được yêu thích nhất', style: AppTextStyles.heading3),
-            const SizedBox(height: 14),
-            ...MockSpaData.getSpas().take(3).map(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Spa được yêu thích nhất', style: AppTextStyles.heading3),
+                TextButton(
+                  onPressed: () => context.push('/favorites'),
+                  child: const Text('Xem yêu thích', style: TextStyle(fontSize: 12.5)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...MockSpaData.getSpas().take(4).map(
               (spa) => Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(12),
@@ -268,11 +386,19 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FavoriteButton(spaId: spa.id, size: 22),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                    ],
+                  ),
                   onTap: () => context.push('/spa/${spa.id}'),
                 ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

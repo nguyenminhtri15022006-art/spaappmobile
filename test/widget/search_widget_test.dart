@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spa_marketplace/core/constants/app_colors.dart';
 import 'package:spa_marketplace/features/search/models/spa_search_filter.dart';
@@ -62,11 +63,13 @@ void main() {
       bool cardTapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SearchResultCard(
-              item: resultItem,
-              onTap: () => cardTapped = true,
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SearchResultCard(
+                item: resultItem,
+                onTap: () => cardTapped = true,
+              ),
             ),
           ),
         ),

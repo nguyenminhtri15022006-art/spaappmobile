@@ -121,6 +121,11 @@ class SearchViewModel extends StateNotifier<SearchState> {
 
   // ===================== QUẢN LÝ DRAFT FILTER =====================
 
+  /// Cập nhật trực tiếp toàn bộ DraftFilter
+  void updateDraftFilter(SpaSearchFilter filter) {
+    state = state.copyWith(draftFilter: filter);
+  }
+
   /// Mở Bottom Sheet: Đồng bộ DraftFilter từ AppliedFilter hiện tại
   void openFilterSheet() {
     state = state.copyWith(

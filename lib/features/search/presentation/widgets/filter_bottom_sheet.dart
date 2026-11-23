@@ -221,40 +221,62 @@ class FilterBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // 6. BỘ LỌC KHOẢNG CÁCH (Mock / Demo Mode)
+                // 6. BỘ LỌC KHOẢNG CÁCH (Khóa trong chế độ Demo)
                 _buildSectionCard(
-                  title: '6. Khoảng cách (Chế độ Demo)',
-                  subtitle: 'Tạm dùng vị trí tham chiếu trung tâm khi chưa có GPS',
-                  child: Wrap(
-                    spacing: 8,
-                    children: [1, 3, 5, 10, 20].map((km) {
-                      final isSelected = draftFilter.maxDistanceKm == km.toDouble();
-                      return ChoiceChip(
-                        label: Text('$km km'),
-                        selected: isSelected,
-                        onSelected: (val) {
-                          viewModel.updateDraftFilter(
-                            draftFilter.copyWith(
-                              maxDistanceKm: val ? km.toDouble() : null,
-                              clearDistance: !val,
+                  title: '6. Khoảng cách (Tạm khóa Demo)',
+                  subtitle: 'Tính năng cần quyền định vị GPS thật trên thiết bị',
+                  child: Column(
+                    crossAxisAlignment: CrossAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondaryLight,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.secondaryDark),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.lock_clock_rounded, size: 16, color: AppColors.accent),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Bộ lọc bán kính GPS sẽ tự động mở khi tích hợp định vị thiết bị thật.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.primaryDark,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        children: [1, 3, 5, 10, 20].map((km) {
+                          return Opacity(
+                            opacity: 0.5,
+                            child: ChoiceChip(
+                              label: Text('$km km'),
+                              selected: false,
+                              onSelected: null, // Khóa chức năng
+                              backgroundColor: AppColors.surface,
+                              labelStyle: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: const BorderSide(color: AppColors.border),
+                              ),
+                              showCheckmark: false,
                             ),
                           );
-                        },
-                        selectedColor: AppColors.secondaryDark,
-                        backgroundColor: AppColors.surface,
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          color: isSelected ? Colors.white : AppColors.text,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(
-                            color: isSelected ? AppColors.secondaryDark : AppColors.border,
-                          ),
-                        ),
-                        showCheckmark: false,
-                      );
-                    }).toList(),
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
