@@ -309,6 +309,57 @@ class SearchViewModel extends StateNotifier<SearchState> {
     }
   }
 
+  /// Quick filter từ thanh cuộn địa điểm: Lọc nhanh Tỉnh/Thành
+  Future<void> quickFilterProvince(String? provinceCode) async {
+    final isSame = state.appliedFilter.provinceCode == provinceCode;
+    final updated = state.appliedFilter.copyWith(
+      provinceCode: isSame ? null : provinceCode,
+      clearProvince: isSame || provinceCode == null,
+      clearWard: true, // Đổi tỉnh tự động reset xã/phường
+    );
+
+    state = state.copyWith(
+      appliedFilter: updated,
+      draftFilter: updated,
+      status: SearchStatus.loading,
+    );
+
+    try {
+      final results = await _repository.search(updated);
+      state = state.copyWith(
+        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+        results: results,
+      );
+    } catch (e) {
+      state = state.copyWith(status: SearchStatus.error);
+    }
+  }
+
+  /// Quick filter từ thanh cuộn địa điểm: Lọc nhanh Xã/Phường thuộc tỉnh hiện tại
+  Future<void> quickFilterWard(String? wardCode) async {
+    final isSame = state.appliedFilter.wardCode == wardCode;
+    final updated = state.appliedFilter.copyWith(
+      wardCode: isSame ? null : wardCode,
+      clearWard: isSame || wardCode == null,
+    );
+
+    state = state.copyWith(
+      appliedFilter: updated,
+      draftFilter: updated,
+      status: SearchStatus.loading,
+    );
+
+    try {
+      final results = await _repository.search(updated);
+      state = state.copyWith(
+        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+        results: results,
+      );
+    } catch (e) {
+      state = state.copyWith(status: SearchStatus.error);
+    }
+  }
+
   /// Quick filter từ Chip Bar: Đổi nhanh thứ tự sắp xếp
   Future<void> quickSort(SortOption option) async {
     final updated = state.appliedFilter.copyWith(sortBy: option);

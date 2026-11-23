@@ -8,6 +8,7 @@ import '../view_models/search_state.dart';
 import '../view_models/search_view_model.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import '../widgets/filter_chip_bar.dart';
+import '../widgets/location_quick_scroll_bar.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/search_result_card.dart';
 import '../widgets/search_suggestions_overlay.dart';
@@ -128,6 +129,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   onCategoryTap: _openFilterBottomSheet,
                   onRatingTap: _openFilterBottomSheet,
                   onSortChanged: (option) => viewModel.quickSort(option),
+                ),
+
+                // 2.1. Thanh cuộn ngang chọn nhanh Tỉnh / Xã Phường theo Tỉnh đang chọn
+                LocationQuickScrollBar(
+                  selectedProvinceCode: searchState.appliedFilter.provinceCode,
+                  selectedWardCode: searchState.appliedFilter.wardCode,
+                  adminRepo: adminRepo,
+                  onProvinceSelected: (pCode) => viewModel.quickFilterProvince(pCode),
+                  onWardSelected: (wCode) => viewModel.quickFilterWard(wCode),
                 ),
 
                 const Divider(height: 1, color: AppColors.divider),

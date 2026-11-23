@@ -101,5 +101,22 @@ void main() {
       expect(viewModel.state.status, equals(SearchStatus.success));
       expect(viewModel.state.results.isNotEmpty, isTrue);
     });
+
+    test('Lọc nhanh Tỉnh và Xã/Phường từ thanh cuộn địa điểm (quickFilter)', () async {
+      // 1. Chọn tỉnh Nghệ An từ thanh cuộn
+      await viewModel.quickFilterProvince('VN-22');
+      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-22'));
+      expect(viewModel.state.appliedFilter.wardCode, isNull);
+
+      // 2. Chọn tiếp phường Trường Thi thuộc Nghệ An
+      await viewModel.quickFilterWard('VN-22-TT');
+      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-22'));
+      expect(viewModel.state.appliedFilter.wardCode, equals('VN-22-TT'));
+
+      // 3. Đổi sang tỉnh Hà Nội -> phường cũ bị xóa
+      await viewModel.quickFilterProvince('VN-HN');
+      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-HN'));
+      expect(viewModel.state.appliedFilter.wardCode, isNull);
+    });
   });
 }
