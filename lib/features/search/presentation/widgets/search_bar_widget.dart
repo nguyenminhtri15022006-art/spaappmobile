@@ -94,15 +94,20 @@ class SearchBarWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (controller.text.isNotEmpty)
-                    IconButton(
-                      icon: const Icon(Icons.cancel_rounded, size: 18),
-                      color: AppColors.textMuted,
-                      onPressed: onClear,
-                      splashRadius: 18,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    ),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: controller,
+                    builder: (context, value, _) {
+                      if (value.text.isEmpty) return const SizedBox.shrink();
+                      return IconButton(
+                        icon: const Icon(Icons.cancel_rounded, size: 18),
+                        color: AppColors.textMuted,
+                        onPressed: onClear,
+                        splashRadius: 18,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      );
+                    },
+                  ),
                   const SizedBox(width: 4),
                 ],
               ),

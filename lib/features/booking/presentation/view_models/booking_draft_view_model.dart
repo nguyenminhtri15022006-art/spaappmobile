@@ -3,7 +3,7 @@ import '../../data/booking_repository.dart';
 import '../../data/mock_booking_repository.dart';
 import '../../models/booking_draft.dart';
 import '../../models/booking_model.dart';
-import '../../../shared/data/mock_spa_data.dart';
+import 'package:spa_marketplace/shared/data/mock_spa_data.dart';
 
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
   return MockBookingRepository();

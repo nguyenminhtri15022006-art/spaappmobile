@@ -6,9 +6,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/data/mock_spa_data.dart';
-import '../../../../shared/models/spa.dart';
-import '../../../../shared/models/spa_branch.dart';
-import '../../../../shared/models/spa_service.dart';
 import '../../../../shared/widgets/not_found_view.dart';
 import '../../../auth/presentation/view_models/auth_view_model.dart';
 import '../view_models/booking_draft_view_model.dart';
@@ -202,7 +199,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thông tin dịch vụ & chi nhánh đã chọn
             Container(
@@ -213,7 +210,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
@@ -231,7 +228,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               service.name,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/data/mock_administrative_repository.dart';
 import '../../../../shared/models/administrative_unit.dart';
@@ -55,7 +55,7 @@ class _LocationDropdownSelectorState extends State<LocationDropdownSelector> {
         : null;
 
     return Column(
-      crossAxisAlignment: CrossAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Dropdown 1: Tỉnh / Thành phố
         const Text(

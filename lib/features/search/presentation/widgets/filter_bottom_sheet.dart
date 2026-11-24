@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../models/spa_search_filter.dart';
 import '../view_models/search_view_model.dart';
@@ -228,7 +228,7 @@ class FilterBottomSheet extends StatelessWidget {
                       ? 'Khoảng cách được tính từ: ${draftFilter.demoLocation.label}'
                       : 'Tạm vô hiệu hóa nếu chưa có GPS thật (hoặc chọn Mốc Demo bên dưới)',
                   child: Column(
-                    crossAxisAlignment: CrossAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'Điểm tham chiếu khoảng cách:',
@@ -422,7 +422,7 @@ class FilterBottomSheet extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
-        crossAxisAlignment: CrossAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,

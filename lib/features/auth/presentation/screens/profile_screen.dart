@@ -151,7 +151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('THÔNG TIN LIÊN HỆ', style: AppTextStyles.caption),
                   const SizedBox(height: 14),
@@ -221,7 +221,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: OutlinedButton.icon(
                 onPressed: () async {
                   await ref.read(authViewModelProvider.notifier).logout();
-                  if (mounted) context.go('/');
+                  if (!context.mounted) return;
+                  context.go('/');
                 },
                 icon: const Icon(Icons.logout_rounded, color: AppColors.error),
                 label: const Text('Đăng xuất tài khoản', style: TextStyle(color: AppColors.error)),
@@ -245,7 +246,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required IconData icon,
   }) {
     return Column(
-      crossAxisAlignment: CrossAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
         const SizedBox(height: 4),

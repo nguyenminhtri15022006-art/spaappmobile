@@ -39,11 +39,13 @@ class SearchViewModel extends StateNotifier<SearchState> {
     state = state.copyWith(status: SearchStatus.loading);
     try {
       final results = await _repository.search(state.appliedFilter);
+      if (!mounted) return;
       state = state.copyWith(
         status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
         results: results,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         status: SearchStatus.error,
         errorMessage: 'Đã có lỗi xảy ra khi tải dịch vụ. Vui lòng thử lại.',
@@ -56,13 +58,16 @@ class SearchViewModel extends StateNotifier<SearchState> {
     state = state.copyWith(
       query: query,
       isSuggestionsVisible: query.trim().isNotEmpty,
+      draftFilter: state.draftFilter.copyWith(keyword: query),
     );
 
     _suggestionDebouncer.run(() async {
       try {
         final suggestions = await _repository.getSuggestions(query);
+        if (!mounted) return;
         state = state.copyWith(suggestions: suggestions);
       } catch (_) {
+        if (!mounted) return;
         state = state.copyWith(suggestions: []);
       }
     });
@@ -86,11 +91,13 @@ class SearchViewModel extends StateNotifier<SearchState> {
 
     try {
       final results = await _repository.search(updatedFilter);
+      if (!mounted) return;
       state = state.copyWith(
         status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
         results: results,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         status: SearchStatus.error,
         errorMessage: 'Không thể tìm kiếm lúc này. Vui lòng thử lại.',
@@ -233,7 +240,7 @@ class SearchViewModel extends StateNotifier<SearchState> {
   /// Đặt lại DraftFilter trong Modal Sheet
   void resetDraftFilter({bool keepKeyword = true}) {
     final reset = keepKeyword
-        ? state.draftFilter.resetFiltersOnly()
+        ? state.draftFilter.resetFiltersOnly().copyWith(keyword: state.query)
         : state.draftFilter.resetAll();
     state = state.copyWith(draftFilter: reset);
   }
@@ -272,11 +279,13 @@ class SearchViewModel extends StateNotifier<SearchState> {
     // 3. Gọi repository thực thi tìm kiếm & cập nhật UI
     try {
       final results = await _repository.search(validDraft);
+      if (!mounted) return;
       state = state.copyWith(
         status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
         results: results,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         status: SearchStatus.error,
         errorMessage: 'Lỗi áp dụng bộ lọc. Vui lòng thử lại.',

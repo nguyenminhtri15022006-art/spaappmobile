@@ -6,7 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/widgets/not_found_view.dart';
-import '../models/booking_model.dart';
+import 'package:spa_marketplace/features/booking/models/booking_model.dart';
 import '../view_models/booking_draft_view_model.dart';
 import '../view_models/my_bookings_view_model.dart';
 
@@ -101,7 +101,7 @@ class BookingDetailScreen extends ConsumerWidget {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Status Header Banner
                 Container(
@@ -117,7 +117,7 @@ class BookingDetailScreen extends ConsumerWidget {
                       Icon(Icons.event_available_rounded, color: statusColor, size: 28),
                       const SizedBox(width: 12),
                       Column(
-                        crossAxisAlignment: CrossAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Trạng thái: ${booking.status.label}',
@@ -148,7 +148,7 @@ class BookingDetailScreen extends ConsumerWidget {
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('ĐỊA ĐIỂM HẸN', style: AppTextStyles.caption),
                       const SizedBox(height: 8),
@@ -199,7 +199,7 @@ class BookingDetailScreen extends ConsumerWidget {
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('DỊCH VỤ & THỜI GIAN', style: AppTextStyles.caption),
                       const SizedBox(height: 8),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -40,7 +40,7 @@ class SearchResultCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Ảnh dịch vụ + Badge thời lượng + Giá
             Stack(
@@ -128,7 +128,7 @@ class SearchResultCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Tên Spa cung cấp
                   Row(
@@ -187,7 +187,7 @@ class SearchResultCard extends StatelessWidget {
 
                   // Địa chỉ chi nhánh phù hợp
                   Row(
-                    crossAxisAlignment: CrossAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(
                         Icons.location_on_outlined,
@@ -224,10 +224,10 @@ class SearchResultCard extends StatelessWidget {
                   // Hàng Giá & Nút "Xem chi tiết"
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Column(
-                        crossAxisAlignment: CrossAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             'Giá dịch vụ',

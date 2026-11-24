@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/data/mock_spa_data.dart';
-import '../../../shared/models/spa_branch.dart';
-import '../../../shared/widgets/branch_card.dart';
-import '../../../shared/widgets/not_found_view.dart';
-import '../../search/presentation/view_models/search_view_model.dart';
+import 'package:spa_marketplace/core/constants/app_colors.dart';
+import 'package:spa_marketplace/core/constants/app_text_styles.dart';
+import 'package:spa_marketplace/shared/data/mock_spa_data.dart';
+import 'package:spa_marketplace/shared/models/spa_branch.dart';
+import 'package:spa_marketplace/shared/widgets/branch_card.dart';
+import 'package:spa_marketplace/shared/widgets/not_found_view.dart';
+import 'package:spa_marketplace/features/search/presentation/view_models/search_view_model.dart';
 
 class BranchSelectionScreen extends ConsumerWidget {
   final String spaId;
@@ -75,7 +75,7 @@ class BranchSelectionScreen extends ConsumerWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thông tin dịch vụ đang đặt
             Container(
@@ -100,7 +100,7 @@ class BranchSelectionScreen extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           service.name,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
@@ -29,7 +29,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         title: const Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'CHÀO BẠN',
@@ -89,7 +89,7 @@ class HomeScreen extends ConsumerWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Thanh kích hoạt tìm kiếm nhanh
             GestureDetector(
@@ -148,7 +148,7 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -287,7 +287,7 @@ class HomeScreen extends ConsumerWidget {
                           Icon(Icons.near_me_rounded, color: AppColors.primary, size: 24),
                           SizedBox(width: 10),
                           Column(
-                            crossAxisAlignment: CrossAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Bản đồ Spa', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
                               Text('Tìm chi nhánh gần bạn', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
@@ -315,7 +315,7 @@ class HomeScreen extends ConsumerWidget {
                           Icon(Icons.calendar_today_rounded, color: AppColors.accent, size: 22),
                           SizedBox(width: 10),
                           Column(
-                            crossAxisAlignment: CrossAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('Lịch hẹn', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
                               Text('Xem trạng thái đặt chỗ', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),

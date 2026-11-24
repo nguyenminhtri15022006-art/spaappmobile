@@ -4,8 +4,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/data/mock_spa_data.dart';
-import '../../../../shared/models/spa.dart';
-import '../../../../shared/models/spa_service.dart';
 import '../../../../shared/widgets/not_found_view.dart';
 import '../../../../shared/widgets/star_rating.dart';
 
@@ -98,7 +96,7 @@ class ServiceDetailScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Spa Name Pill
                   GestureDetector(
@@ -237,7 +235,7 @@ class ServiceDetailScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        crossAxisAlignment: CrossAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 18),
           const SizedBox(width: 10),

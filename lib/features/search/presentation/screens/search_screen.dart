@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
-import '../../models/spa_search_filter.dart';
 import '../view_models/search_state.dart';
 import '../view_models/search_view_model.dart';
 import '../widgets/filter_bottom_sheet.dart';

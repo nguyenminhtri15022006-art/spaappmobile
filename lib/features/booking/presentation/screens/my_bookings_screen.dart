@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/booking_summary_card.dart';
-import '../models/booking_model.dart';
+import 'package:spa_marketplace/features/booking/models/booking_model.dart';
 import '../view_models/my_bookings_view_model.dart';
 
 class MyBookingsScreen extends ConsumerStatefulWidget {

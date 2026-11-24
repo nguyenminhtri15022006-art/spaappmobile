@@ -19,6 +19,8 @@ class NotFoundView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canGoBack = GoRouter.maybeOf(context)?.canPop() ?? false;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -54,7 +56,7 @@ class NotFoundView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (context.canPop()) ...[
+                if (canGoBack) ...[
                   OutlinedButton.icon(
                     onPressed: () => context.pop(),
                     icon: const Icon(Icons.arrow_back_rounded, size: 18),

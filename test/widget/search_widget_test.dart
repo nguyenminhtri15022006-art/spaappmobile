@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spa_marketplace/core/constants/app_colors.dart';
-import 'package:spa_marketplace/features/search/models/spa_search_filter.dart';
 import 'package:spa_marketplace/features/search/models/spa_service_search_result.dart';
 import 'package:spa_marketplace/features/search/presentation/widgets/price_range_filter.dart';
 import 'package:spa_marketplace/features/search/presentation/widgets/search_bar_widget.dart';
@@ -89,6 +87,7 @@ void main() {
 
       await tester.tap(find.text('Xem chi tiết'));
       expect(cardTapped, isTrue);
+      await tester.pump(const Duration(milliseconds: 200));
     });
 
     testWidgets('PriceRangeFilter hiển thị RangeSlider và định dạng tiền', (tester) async {

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/data/mock_spa_data.dart';
-import '../../../shared/models/spa.dart';
-import '../../../shared/models/spa_service.dart';
-import '../../../shared/widgets/favorite_button.dart';
-import '../../../shared/widgets/not_found_view.dart';
-import '../../../shared/widgets/spa_service_card.dart';
-import '../../../shared/widgets/star_rating.dart';
+import 'package:spa_marketplace/core/constants/app_colors.dart';
+import 'package:spa_marketplace/core/constants/app_text_styles.dart';
+import 'package:spa_marketplace/shared/data/mock_spa_data.dart';
+import 'package:spa_marketplace/shared/models/spa_service.dart';
+import 'package:spa_marketplace/shared/widgets/favorite_button.dart';
+import 'package:spa_marketplace/shared/widgets/not_found_view.dart';
+import 'package:spa_marketplace/shared/widgets/spa_service_card.dart';
+import 'package:spa_marketplace/shared/widgets/star_rating.dart';
 
 class SpaDetailScreen extends StatelessWidget {
   final String spaId;
@@ -118,7 +117,7 @@ class SpaDetailScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header Spa: Đánh giá + Số chi nhánh
                   Row(
@@ -173,7 +172,7 @@ class SpaDetailScreen extends StatelessWidget {
                         border: Border.all(color: AppColors.accent, width: 1.5),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Row(
                             children: [
@@ -263,13 +262,13 @@ class SpaDetailScreen extends StatelessWidget {
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Row(
-                        crossAxisAlignment: CrossAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(Icons.storefront_rounded, size: 20, color: AppColors.primary),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment: CrossAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [

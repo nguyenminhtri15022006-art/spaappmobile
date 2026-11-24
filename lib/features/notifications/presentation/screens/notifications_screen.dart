@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_text_styles.dart';
-import '../models/notification_item.dart';
 import '../view_models/notifications_view_model.dart';
 
 class NotificationsScreen extends ConsumerWidget {
@@ -121,7 +119,7 @@ class NotificationsScreen extends ConsumerWidget {
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Column(
-                            crossAxisAlignment: CrossAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 item.message,

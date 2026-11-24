@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../view_models/booking_draft_view_model.dart';
-import '../models/booking_model.dart';
+import 'package:spa_marketplace/features/booking/models/booking_model.dart';
 
 class BookingSuccessScreen extends ConsumerWidget {
   final String? bookingId;

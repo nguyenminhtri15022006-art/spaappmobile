@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/favorites_repository.dart';
 import '../../data/mock_favorites_repository.dart';
-import '../../../shared/models/spa.dart';
+import 'package:spa_marketplace/shared/models/spa.dart';
 
 final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
   return MockFavoritesRepository();
