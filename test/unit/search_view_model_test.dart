@@ -164,27 +164,30 @@ void main() {
       expect(resUpperCase.length, equals(resWithDiacritics.length));
     });
 
-    test('Dữ liệu hành chính 34 tỉnh/thành Việt Nam (01/07/2025) đầy đủ và tìm kiếm linh hoạt', () async {
+    test('Dữ liệu hành chính chuẩn toàn quốc (63 tỉnh/thành, quận/huyện, xã/phường) nạp từ JSON', () async {
       final adminRepo = MockAdministrativeRepository();
       final allProvinces = await adminRepo.getProvinces();
 
-      // Kiểm tra đúng 34 đơn vị hành chính cấp tỉnh
-      expect(allProvinces.length, equals(34));
+      // Kiểm tra đầy đủ 63 đơn vị hành chính cấp tỉnh
+      expect(allProvinces.length, equals(63));
 
       // Kiểm tra tìm kiếm không dấu
       final hcm = await adminRepo.getProvinces(query: 'ho chi minh');
       expect(hcm.any((p) => p.code == 'VN-SG'), isTrue);
 
-      // Kiểm tra tìm kiếm qua alias cũ (Bình Dương hợp nhất vào TP.HCM)
+      // Kiểm tra tìm kiếm tỉnh độc lập (Bình Dương, Quảng Bình)
       final binhDuong = await adminRepo.getProvinces(query: 'binh duong');
-      expect(binhDuong.any((p) => p.code == 'VN-SG'), isTrue);
+      expect(binhDuong.any((p) => p.name.contains('Bình Dương')), isTrue);
+
+      final quangBinh = await adminRepo.getProvinces(query: 'quang binh');
+      expect(quangBinh.any((p) => p.name.contains('Quảng Bình')), isTrue);
 
       // Kiểm tra tìm kiếm phường xã của Nghệ An
       final ngheAnWards = await adminRepo.getWards('VN-22');
       expect(ngheAnWards.isNotEmpty, isTrue);
       expect(ngheAnWards.any((w) => w.code == 'VN-22-TT'), isTrue);
 
-      // Tìm kiếm phường theo quận cũ (Quận 1)
+      // Tìm kiếm phường theo quận (Quận 1)
       final sgWards = await adminRepo.getWards('VN-SG', query: 'quan 1');
       expect(sgWards.any((w) => w.name == 'Phường Bến Nghé'), isTrue);
     });
