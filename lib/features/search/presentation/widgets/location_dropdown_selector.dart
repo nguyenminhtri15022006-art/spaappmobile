@@ -460,17 +460,26 @@ class _SearchableUnitBottomSheetState extends State<_SearchableUnitBottomSheet> 
                                 color: AppColors.text,
                               ),
                             ),
-                            subtitle: unit.aliases.isNotEmpty
+                            subtitle: unit.districtName != null
                                 ? Text(
-                                    'Bao gồm: ${unit.aliases.join(", ")}',
+                                    unit.districtName!,
                                     style: const TextStyle(
-                                      fontSize: 11.5,
-                                      color: AppColors.textMuted,
+                                      fontSize: 12,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   )
-                                : null,
+                                : unit.aliases.isNotEmpty
+                                    ? Text(
+                                        'Khu vực: ${unit.aliases.join(", ")}',
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          color: AppColors.textMuted,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    : null,
                             trailing: const Icon(
                               Icons.chevron_right_rounded,
                               size: 18,

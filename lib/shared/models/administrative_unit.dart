@@ -10,6 +10,7 @@ class AdministrativeUnit {
   final String name;
   final AdministrativeType type;
   final String? parentCode; // Mã tỉnh/thành nếu là xã/phường
+  final String? districtName; // Tên Quận / Huyện / Thị xã trực thuộc
   final List<String> aliases; // Tên cũ hoặc cách gọi thông dụng
 
   const AdministrativeUnit({
@@ -17,12 +18,16 @@ class AdministrativeUnit {
     required this.name,
     required this.type,
     this.parentCode,
+    this.districtName,
     this.aliases = const [],
   });
 
   bool matchesQuery(String query) {
     if (query.trim().isEmpty) return true;
     if (VietnameseUtils.containsSearch(name, query)) return true;
+    if (districtName != null && VietnameseUtils.containsSearch(districtName!, query)) {
+      return true;
+    }
     for (final alias in aliases) {
       if (VietnameseUtils.containsSearch(alias, query)) return true;
     }
