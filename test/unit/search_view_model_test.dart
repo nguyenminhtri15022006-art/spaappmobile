@@ -3,6 +3,7 @@ import 'package:spa_marketplace/features/search/data/mock_search_repository.dart
 import 'package:spa_marketplace/features/search/models/spa_search_filter.dart';
 import 'package:spa_marketplace/features/search/presentation/view_models/search_state.dart';
 import 'package:spa_marketplace/features/search/presentation/view_models/search_view_model.dart';
+import 'package:spa_marketplace/shared/data/mock_administrative_repository.dart';
 
 void main() {
   late MockSearchRepository repository;
@@ -102,21 +103,90 @@ void main() {
       expect(viewModel.state.results.isNotEmpty, isTrue);
     });
 
-    test('Lọc nhanh Tỉnh và Xã/Phường từ thanh cuộn địa điểm (quickFilter)', () async {
-      // 1. Chọn tỉnh Nghệ An từ thanh cuộn
-      await viewModel.quickFilterProvince('VN-22');
-      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-22'));
-      expect(viewModel.state.appliedFilter.wardCode, isNull);
+    test('Quick Filter: Áp dụng và xóa riêng từng bộ lọc (Category, Rating, Price, Location, Sort)', () async {
+      // 1. Áp dụng Quick Category
+      await viewModel.applyQuickCategory('cat_goidau');
+      expect(viewModel.state.appliedFilter.categoryId, equals('cat_goidau'));
+      expect(viewModel.state.draftFilter.categoryId, equals('cat_goidau'));
 
-      // 2. Chọn tiếp phường Trường Thi thuộc Nghệ An
-      await viewModel.quickFilterWard('VN-22-TT');
-      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-22'));
-      expect(viewModel.state.appliedFilter.wardCode, equals('VN-22-TT'));
+      // 2. Áp dụng Quick Rating
+      await viewModel.applyQuickRating(4.5);
+      expect(viewModel.state.appliedFilter.minRating, equals(4.5));
+      // Giữ nguyên category đã chọn trước đó
+      expect(viewModel.state.appliedFilter.categoryId, equals('cat_goidau'));
 
-      // 3. Đổi sang tỉnh Hà Nội -> phường cũ bị xóa
-      await viewModel.quickFilterProvince('VN-HN');
-      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-HN'));
-      expect(viewModel.state.appliedFilter.wardCode, isNull);
+      // 3. Áp dụng Quick Price
+      await viewModel.applyQuickPrice(100000, 400000);
+      expect(viewModel.state.appliedFilter.minPrice, equals(100000));
+      expect(viewModel.state.appliedFilter.maxPrice, equals(400000));
+
+      // 4. Áp dụng Quick Location
+      await viewModel.applyQuickLocation('VN-SG', 'VN-SG-BN');
+      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-SG'));
+      expect(viewModel.state.appliedFilter.wardCode, equals('VN-SG-BN'));
+
+      // 5. Áp dụng Quick Sort
+      await viewModel.applyQuickSort(SortOption.priceAsc);
+      expect(viewModel.state.appliedFilter.sortBy, equals(SortOption.priceAsc));
+
+      // 6. Xóa riêng từng bộ lọc (Reset Category mà không ảnh hưởng Rating, Price, Location)
+      await viewModel.applyQuickCategory(null);
+      expect(viewModel.state.appliedFilter.categoryId, isNull);
+      expect(viewModel.state.appliedFilter.minRating, equals(4.5));
+      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-SG'));
+
+      // 7. Xóa riêng Rating
+      await viewModel.applyQuickRating(null);
+      expect(viewModel.state.appliedFilter.minRating, isNull);
+      expect(viewModel.state.appliedFilter.provinceCode, equals('VN-SG'));
+    });
+
+    test('Đồng bộ 1 nguồn State giữa Quick Filter và Bộ lọc nâng cao (Single Source of Truth)', () async {
+      // Chọn từ Quick Filter
+      await viewModel.applyQuickCategory('cat_massage');
+      await viewModel.applyQuickRating(4.0);
+
+      // Mở bộ lọc nâng cao
+      viewModel.openFilterSheet();
+
+      // DraftFilter phải được đồng bộ chính xác từ AppliedFilter
+      expect(viewModel.state.draftFilter.categoryId, equals('cat_massage'));
+      expect(viewModel.state.draftFilter.minRating, equals(4.0));
+    });
+
+    test('Tìm kiếm tiếng Việt có dấu và không dấu trả về kết quả tương đương', () async {
+      final resWithDiacritics = await repository.search(const SpaSearchFilter(keyword: 'gội đầu'));
+      final resWithoutDiacritics = await repository.search(const SpaSearchFilter(keyword: 'goi dau'));
+      final resUpperCase = await repository.search(const SpaSearchFilter(keyword: 'GỘI ĐẦU'));
+
+      expect(resWithDiacritics.isNotEmpty, isTrue);
+      expect(resWithoutDiacritics.length, equals(resWithDiacritics.length));
+      expect(resUpperCase.length, equals(resWithDiacritics.length));
+    });
+
+    test('Dữ liệu hành chính 34 tỉnh/thành Việt Nam (01/07/2025) đầy đủ và tìm kiếm linh hoạt', () async {
+      final adminRepo = MockAdministrativeRepository();
+      final allProvinces = await adminRepo.getProvinces();
+
+      // Kiểm tra đúng 34 đơn vị hành chính cấp tỉnh
+      expect(allProvinces.length, equals(34));
+
+      // Kiểm tra tìm kiếm không dấu
+      final hcm = await adminRepo.getProvinces(query: 'ho chi minh');
+      expect(hcm.any((p) => p.code == 'VN-SG'), isTrue);
+
+      // Kiểm tra tìm kiếm qua alias cũ (Bình Dương hợp nhất vào TP.HCM)
+      final binhDuong = await adminRepo.getProvinces(query: 'binh duong');
+      expect(binhDuong.any((p) => p.code == 'VN-SG'), isTrue);
+
+      // Kiểm tra tìm kiếm phường xã của Nghệ An
+      final ngheAnWards = await adminRepo.getWards('VN-22');
+      expect(ngheAnWards.isNotEmpty, isTrue);
+      expect(ngheAnWards.any((w) => w.code == 'VN-22-TT'), isTrue);
+
+      // Tìm kiếm phường theo quận cũ (Quận 1)
+      final sgWards = await adminRepo.getWards('VN-SG', query: 'quan 1');
+      expect(sgWards.any((w) => w.name == 'Phường Bến Nghé'), isTrue);
     });
   });
 }

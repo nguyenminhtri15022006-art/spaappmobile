@@ -295,10 +295,14 @@ class SearchViewModel extends StateNotifier<SearchState> {
 
   /// Quick filter từ Chip Bar: Lọc nhanh danh mục
   Future<void> quickFilterCategory(String? categoryId) async {
-    final isSelected = state.appliedFilter.categoryId == categoryId;
+    await applyQuickCategory(categoryId);
+  }
+
+  /// Áp dụng nhanh danh mục từ Quick Filter
+  Future<void> applyQuickCategory(String? categoryId) async {
     final updated = state.appliedFilter.copyWith(
-      categoryId: isSelected ? null : categoryId,
-      clearCategory: isSelected,
+      categoryId: categoryId,
+      clearCategory: categoryId == null,
     );
 
     state = state.copyWith(
@@ -309,11 +313,122 @@ class SearchViewModel extends StateNotifier<SearchState> {
 
     try {
       final results = await _repository.search(updated);
+      if (!mounted) return;
       state = state.copyWith(
         status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
         results: results,
       );
     } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(status: SearchStatus.error);
+    }
+  }
+
+  /// Áp dụng nhanh mức đánh giá từ Quick Filter
+  Future<void> applyQuickRating(double? minRating) async {
+    final updated = state.appliedFilter.copyWith(
+      minRating: minRating,
+      clearMinRating: minRating == null,
+    );
+
+    state = state.copyWith(
+      appliedFilter: updated,
+      draftFilter: updated,
+      status: SearchStatus.loading,
+    );
+
+    try {
+      final results = await _repository.search(updated);
+      if (!mounted) return;
+      state = state.copyWith(
+        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+        results: results,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(status: SearchStatus.error);
+    }
+  }
+
+  /// Áp dụng nhanh khoảng giá từ Quick Filter
+  Future<void> applyQuickPrice(double min, double max) async {
+    final validMin = min < max ? min : max;
+    final validMax = max > min ? max : min;
+    final updated = state.appliedFilter.copyWith(
+      minPrice: validMin,
+      maxPrice: validMax,
+    );
+
+    state = state.copyWith(
+      appliedFilter: updated,
+      draftFilter: updated,
+      status: SearchStatus.loading,
+    );
+
+    try {
+      final results = await _repository.search(updated);
+      if (!mounted) return;
+      state = state.copyWith(
+        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+        results: results,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(status: SearchStatus.error);
+    }
+  }
+
+  /// Áp dụng nhanh địa điểm từ Quick Filter
+  Future<void> applyQuickLocation(String? provinceCode, String? wardCode) async {
+    final updated = state.appliedFilter.copyWith(
+      provinceCode: provinceCode,
+      clearProvince: provinceCode == null,
+      wardCode: wardCode,
+      clearWard: wardCode == null || provinceCode == null,
+    );
+
+    state = state.copyWith(
+      appliedFilter: updated,
+      draftFilter: updated,
+      status: SearchStatus.loading,
+    );
+
+    try {
+      final results = await _repository.search(updated);
+      if (!mounted) return;
+      state = state.copyWith(
+        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+        results: results,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(status: SearchStatus.error);
+    }
+  }
+
+  /// Quick filter từ Chip Bar: Đổi nhanh thứ tự sắp xếp
+  Future<void> quickSort(SortOption option) async {
+    await applyQuickSort(option);
+  }
+
+  /// Áp dụng nhanh thứ tự sắp xếp
+  Future<void> applyQuickSort(SortOption option) async {
+    final updated = state.appliedFilter.copyWith(sortBy: option);
+    state = state.copyWith(
+      appliedFilter: updated,
+      draftFilter: updated,
+      status: SearchStatus.loading,
+    );
+
+    try {
+      final results = await _repository.search(updated);
+      if (!mounted) return;
+      state = state.copyWith(
+        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+        results: results,
+      );
+    } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(status: SearchStatus.error);
     }
   }
@@ -335,11 +450,13 @@ class SearchViewModel extends StateNotifier<SearchState> {
 
     try {
       final results = await _repository.search(updated);
+      if (!mounted) return;
       state = state.copyWith(
         status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
         results: results,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(status: SearchStatus.error);
     }
   }
@@ -360,31 +477,13 @@ class SearchViewModel extends StateNotifier<SearchState> {
 
     try {
       final results = await _repository.search(updated);
+      if (!mounted) return;
       state = state.copyWith(
         status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
         results: results,
       );
     } catch (e) {
-      state = state.copyWith(status: SearchStatus.error);
-    }
-  }
-
-  /// Quick filter từ Chip Bar: Đổi nhanh thứ tự sắp xếp
-  Future<void> quickSort(SortOption option) async {
-    final updated = state.appliedFilter.copyWith(sortBy: option);
-    state = state.copyWith(
-      appliedFilter: updated,
-      draftFilter: updated,
-      status: SearchStatus.loading,
-    );
-
-    try {
-      final results = await _repository.search(updated);
-      state = state.copyWith(
-        status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
-        results: results,
-      );
-    } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(status: SearchStatus.error);
     }
   }

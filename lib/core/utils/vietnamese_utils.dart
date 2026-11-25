@@ -26,6 +26,8 @@ class VietnameseUtils {
         result = result.replaceAll(accents[i], nonAccent);
       }
     });
+    // Loại bỏ các ký tự dấu tổ hợp (Unicode combining diacritical marks) từ bộ gõ NFD
+    result = result.replaceAll(RegExp(r'[\u0300-\u036f]'), '');
     return result.toLowerCase();
   }
 

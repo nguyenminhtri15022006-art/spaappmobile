@@ -1,3 +1,5 @@
+import '../../core/utils/vietnamese_utils.dart';
+
 enum AdministrativeType {
   province, // Tỉnh / Thành phố trực thuộc trung ương
   ward, // Xã / Phường / Thị trấn / Đặc khu
@@ -20,11 +22,11 @@ class AdministrativeUnit {
 
   bool matchesQuery(String query) {
     if (query.trim().isEmpty) return true;
-    final normalized = query.toLowerCase().trim();
-    if (name.toLowerCase().contains(normalized)) return true;
+    if (VietnameseUtils.containsSearch(name, query)) return true;
     for (final alias in aliases) {
-      if (alias.toLowerCase().contains(normalized)) return true;
+      if (VietnameseUtils.containsSearch(alias, query)) return true;
     }
+    if (VietnameseUtils.containsSearch(code, query)) return true;
     return false;
   }
 

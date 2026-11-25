@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../models/spa_search_filter.dart';
 import '../view_models/search_state.dart';
 import '../view_models/search_view_model.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import '../widgets/filter_chip_bar.dart';
-import '../widgets/location_quick_scroll_bar.dart';
+import '../widgets/quick_filter_sheets.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/search_result_card.dart';
 import '../widgets/search_suggestions_overlay.dart';
+import '../../../../shared/data/mock_administrative_repository.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialCategoryId;
@@ -45,6 +47,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
+  /// Mở toàn bộ bộ lọc nâng cao
   void _openFilterBottomSheet() {
     final viewModel = ref.read(searchViewModelProvider.notifier);
     final adminRepo = ref.read(administrativeRepositoryProvider);
@@ -76,19 +79,104 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
+  /// 1. Quick Filter: Chỉ mở Danh mục dịch vụ
+  void _openCategoryQuickFilter(SearchState state, SearchViewModel viewModel) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => CategoryQuickFilterSheet(
+        initialCategoryId: state.appliedFilter.categoryId,
+        onApply: (catId) => viewModel.applyQuickCategory(catId),
+        onReset: () => viewModel.applyQuickCategory(null),
+      ),
+    );
+  }
+
+  /// 2. Quick Filter: Chỉ mở Đánh giá
+  void _openRatingQuickFilter(SearchState state, SearchViewModel viewModel) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => RatingQuickFilterSheet(
+        initialRating: state.appliedFilter.minRating,
+        onApply: (rating) => viewModel.applyQuickRating(rating),
+        onReset: () => viewModel.applyQuickRating(null),
+      ),
+    );
+  }
+
+  /// 3. Quick Filter: Chỉ mở Khoảng giá
+  void _openPriceQuickFilter(SearchState state, SearchViewModel viewModel) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => PriceQuickFilterSheet(
+        initialMin: state.appliedFilter.minPrice,
+        initialMax: state.appliedFilter.maxPrice,
+        onApply: (min, max) => viewModel.applyQuickPrice(min, max),
+        onReset: () => viewModel.applyQuickPrice(
+          SpaSearchFilter.defaultMinPrice,
+          SpaSearchFilter.defaultMaxPrice,
+        ),
+      ),
+    );
+  }
+
+  /// 4. Quick Filter: Chỉ mở Địa điểm chi nhánh (2 dropdowns Tỉnh/Phường)
+  void _openLocationQuickFilter(
+    SearchState state,
+    SearchViewModel viewModel,
+    AdministrativeRepository adminRepo,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => LocationQuickFilterSheet(
+        initialProvinceCode: state.appliedFilter.provinceCode,
+        initialWardCode: state.appliedFilter.wardCode,
+        adminRepo: adminRepo,
+        onApply: (pCode, wCode) => viewModel.applyQuickLocation(pCode, wCode),
+        onReset: () => viewModel.applyQuickLocation(null, null),
+      ),
+    );
+  }
+
+  /// 5. Quick Filter: Chỉ mở Sắp xếp
+  void _openSortQuickFilter(SearchState state, SearchViewModel viewModel) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => SortQuickFilterSheet(
+        initialSort: state.appliedFilter.sortBy,
+        onSelected: (sort) => viewModel.applyQuickSort(sort),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchViewModelProvider);
     final viewModel = ref.read(searchViewModelProvider.notifier);
     final adminRepo = ref.read(administrativeRepositoryProvider);
 
-    // Đồng bộ controller nếu query thay đổi bên ngoài (ví dụ bấm suggestion)
-    if (_textController.text != searchState.query) {
-      _textController.text = searchState.query;
-      _textController.selection = TextSelection.fromPosition(
-        TextPosition(offset: _textController.text.length),
-      );
-    }
+    // Lắng nghe thay đổi query từ bên ngoài (ví dụ bấm suggestion hoặc clear)
+    // TUYỆT ĐỐI không gán _textController.text trong build() khi người dùng đang trực tiếp gõ (tránh mất ký tự tiếng Việt Telex/VNI)
+    ref.listen<String>(
+      searchViewModelProvider.select((s) => s.query),
+      (prev, next) {
+        if (_textController.text != next && !_focusNode.hasFocus) {
+          _textController.value = TextEditingValue(
+            text: next,
+            selection: TextSelection.collapsed(offset: next.length),
+          );
+        }
+      },
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -97,7 +185,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           children: [
             Column(
               children: [
-                // 1. App Bar với Search TextField và nút Lọc
+                // 1. App Bar với Search TextField và nút Lọc nâng cao
                 SearchBarWidget(
                   controller: _textController,
                   focusNode: _focusNode,
@@ -118,25 +206,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   },
                 ),
 
-                // 2. Thanh Filter Chips ngang bên dưới SearchBar
+                // 2. Thanh Filter Chips ngang (mỗi chip mở bottom sheet riêng)
                 FilterChipBar(
                   filter: searchState.appliedFilter,
                   adminRepo: adminRepo,
                   onOpenAllFilters: _openFilterBottomSheet,
-                  onLocationTap: _openFilterBottomSheet,
-                  onPriceTap: _openFilterBottomSheet,
-                  onCategoryTap: _openFilterBottomSheet,
-                  onRatingTap: _openFilterBottomSheet,
-                  onSortChanged: (option) => viewModel.quickSort(option),
-                ),
-
-                // 2.1. Thanh cuộn ngang chọn nhanh Tỉnh / Xã Phường theo Tỉnh đang chọn
-                LocationQuickScrollBar(
-                  selectedProvinceCode: searchState.appliedFilter.provinceCode,
-                  selectedWardCode: searchState.appliedFilter.wardCode,
-                  adminRepo: adminRepo,
-                  onProvinceSelected: (pCode) => viewModel.quickFilterProvince(pCode),
-                  onWardSelected: (wCode) => viewModel.quickFilterWard(wCode),
+                  onCategoryTap: () => _openCategoryQuickFilter(searchState, viewModel),
+                  onRatingTap: () => _openRatingQuickFilter(searchState, viewModel),
+                  onSortTap: () => _openSortQuickFilter(searchState, viewModel),
+                  onLocationTap: () => _openLocationQuickFilter(searchState, viewModel, adminRepo),
+                  onPriceTap: () => _openPriceQuickFilter(searchState, viewModel),
                 ),
 
                 const Divider(height: 1, color: AppColors.divider),
@@ -194,6 +273,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   suggestions: searchState.suggestions,
                   onSelectSuggestion: (s) {
                     _focusNode.unfocus();
+                    _textController.value = TextEditingValue(
+                      text: s,
+                      selection: TextSelection.collapsed(offset: s.length),
+                    );
                     viewModel.selectSuggestion(s);
                   },
                   onDismiss: () => viewModel.hideSuggestions(),
@@ -255,51 +338,45 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (state.isEmpty || state.results.isEmpty) {
       return Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 80,
-                height: 80,
+                width: 72,
+                height: 72,
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryLight,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.search_off_rounded,
-                  size: 40,
-                  color: AppColors.primary,
+                  size: 36,
+                  color: AppColors.accent,
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Không tìm thấy dịch vụ phù hợp',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text,
-                ),
+                'Không tìm thấy dịch vụ nào',
+                style: AppTextStyles.heading3,
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               const Text(
-                'Vui lòng thử tìm với từ khóa khác (ví dụ: gội đầu, massage, nail) hoặc điều chỉnh mở rộng bộ lọc.',
+                'Thử tìm từ khóa khác, hoặc nới lỏng các tiêu chí trong bộ lọc',
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: () {
-                  viewModel.resetDraftFilter(keepKeyword: false);
-                  viewModel.clearQuery();
-                },
-                icon: const Icon(Icons.restart_alt_rounded, size: 18),
-                label: const Text('Đặt lại tìm kiếm & bộ lọc'),
-              ),
+              if (state.appliedFilter.activeFilterCount > 0)
+                OutlinedButton.icon(
+                  onPressed: () {
+                    viewModel.resetDraftFilter(keepKeyword: true);
+                    viewModel.applyDraftFilter();
+                  },
+                  icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
+                  label: const Text('Đặt lại bộ lọc'),
+                ),
             ],
           ),
         ),
@@ -310,13 +387,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: state.results.length,
       itemBuilder: (context, index) {
-        final item = state.results[index];
+        final resultItem = state.results[index];
         return SearchResultCard(
-          item: item,
+          item: resultItem,
           onTap: () {
-            // Điều hướng sang SpaDetailScreen với spaId và serviceId đã chọn
             context.push(
-              '/spa/${item.spa.id}?serviceId=${item.service.id}',
+              '/spa/${resultItem.spa.id}/service/${resultItem.service.id}',
             );
           },
         );

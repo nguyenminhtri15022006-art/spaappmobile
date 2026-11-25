@@ -13,7 +13,8 @@ class FilterChipBar extends StatelessWidget {
   final VoidCallback onPriceTap;
   final VoidCallback onCategoryTap;
   final VoidCallback onRatingTap;
-  final ValueChanged<SortOption> onSortChanged;
+  final VoidCallback onSortTap;
+  final ValueChanged<SortOption>? onSortChanged;
 
   const FilterChipBar({
     super.key,
@@ -24,23 +25,26 @@ class FilterChipBar extends StatelessWidget {
     required this.onPriceTap,
     required this.onCategoryTap,
     required this.onRatingTap,
-    required this.onSortChanged,
+    required this.onSortTap,
+    this.onSortChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Xác định nhãn hiển thị cho từng Chip
+    // 1. Nhãn Địa điểm
     final hasLocation = filter.provinceCode != null && filter.provinceCode!.isNotEmpty;
     final locationLabel = hasLocation
         ? adminRepo.formatLocation(filter.provinceCode, filter.wardCode)
         : 'Địa điểm';
 
+    // 2. Nhãn Khoảng giá
     final hasPrice = filter.minPrice > SpaSearchFilter.defaultMinPrice ||
         filter.maxPrice < SpaSearchFilter.defaultMaxPrice;
     final priceLabel = hasPrice
         ? CurrencyFormatter.formatRange(filter.minPrice, filter.maxPrice)
         : 'Khoảng giá';
 
+    // 3. Nhãn Danh mục
     final hasCategory = filter.categoryId != null && filter.categoryId!.isNotEmpty;
     String categoryLabel = 'Danh mục';
     if (hasCategory) {
@@ -51,8 +55,13 @@ class FilterChipBar extends StatelessWidget {
       categoryLabel = cat.name;
     }
 
+    // 4. Nhãn Đánh giá
     final hasRating = filter.minRating != null && filter.minRating! > 0;
     final ratingLabel = hasRating ? 'Từ ${filter.minRating}★' : 'Đánh giá';
+
+    // 5. Nhãn Sắp xếp
+    final hasSort = filter.sortBy != SortOption.relevance;
+    final sortLabel = filter.sortBy.label;
 
     return Container(
       height: 44,
@@ -61,7 +70,7 @@ class FilterChipBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
-          // Nút mở toàn bộ bộ lọc
+          // Nút mở toàn bộ bộ lọc nâng cao
           _buildFilterPill(
             label: 'Tất cả bộ lọc',
             icon: Icons.tune_rounded,
@@ -71,25 +80,7 @@ class FilterChipBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Chip Địa điểm
-          _buildFilterPill(
-            label: locationLabel,
-            icon: Icons.location_on_outlined,
-            isSelected: hasLocation,
-            onTap: onLocationTap,
-          ),
-          const SizedBox(width: 8),
-
-          // Chip Giá
-          _buildFilterPill(
-            label: priceLabel,
-            icon: Icons.monetization_on_outlined,
-            isSelected: hasPrice,
-            onTap: onPriceTap,
-          ),
-          const SizedBox(width: 8),
-
-          // Chip Danh mục
+          // Chip Danh mục dịch vụ (Mở sheet riêng Danh mục)
           _buildFilterPill(
             label: categoryLabel,
             icon: Icons.spa_outlined,
@@ -98,7 +89,7 @@ class FilterChipBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Chip Đánh giá
+          // Chip Đánh giá (Mở sheet riêng Đánh giá)
           _buildFilterPill(
             label: ratingLabel,
             icon: Icons.star_outline_rounded,
@@ -107,42 +98,30 @@ class FilterChipBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Chip Sắp xếp nhanh (Popup Menu)
-          PopupMenuButton<SortOption>(
-            onSelected: onSortChanged,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            color: Colors.white,
-            elevation: 4,
-            itemBuilder: (context) => SortOption.values.map((option) {
-              final isCurrent = filter.sortBy == option;
-              return PopupMenuItem<SortOption>(
-                value: option,
-                child: Row(
-                  children: [
-                    Icon(
-                      isCurrent ? Icons.radio_button_checked : Icons.radio_button_off,
-                      size: 16,
-                      color: isCurrent ? AppColors.primary : AppColors.textMuted,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      option.label,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
-                        color: isCurrent ? AppColors.primary : AppColors.text,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-            child: _buildFilterPill(
-              label: filter.sortBy.label,
-              icon: Icons.sort_rounded,
-              isSelected: filter.sortBy != SortOption.relevance,
-              onTap: null, // PopupMenuButton handles tap
-            ),
+          // Chip Sắp xếp (Mở popup/sheet riêng Sắp xếp)
+          _buildFilterPill(
+            label: sortLabel,
+            icon: Icons.sort_rounded,
+            isSelected: hasSort,
+            onTap: onSortTap,
+          ),
+          const SizedBox(width: 8),
+
+          // Chip Địa điểm (Mở sheet riêng Địa điểm)
+          _buildFilterPill(
+            label: locationLabel,
+            icon: Icons.location_on_outlined,
+            isSelected: hasLocation,
+            onTap: onLocationTap,
+          ),
+          const SizedBox(width: 8),
+
+          // Chip Khoảng giá (Mở sheet riêng Giá)
+          _buildFilterPill(
+            label: priceLabel,
+            icon: Icons.monetization_on_outlined,
+            isSelected: hasPrice,
+            onTap: onPriceTap,
           ),
         ],
       ),
@@ -154,7 +133,7 @@ class FilterChipBar extends StatelessWidget {
     required IconData icon,
     required bool isSelected,
     int? badgeCount,
-    VoidCallback? onTap,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -170,7 +149,7 @@ class FilterChipBar extends StatelessWidget {
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
