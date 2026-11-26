@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
 import '../../features/auth/presentation/view_models/auth_view_model.dart';
-import '../../features/booking/presentation/view_models/my_bookings_view_model.dart';
 import '../../features/favorites/presentation/view_models/favorites_view_model.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -16,9 +15,6 @@ class AppDrawer extends ConsumerWidget {
     final isAuthenticated = authState.isAuthenticated;
     final favoriteCount = ref.watch(
       favoritesViewModelProvider.select((s) => s.favoriteSpas.length),
-    );
-    final bookingCount = ref.watch(
-      myBookingsViewModelProvider.select((s) => s.bookings.length),
     );
 
     return Drawer(
@@ -64,7 +60,7 @@ class AppDrawer extends ConsumerWidget {
                         Text(
                           isAuthenticated && user != null
                               ? user.email
-                              : 'Đăng nhập để đặt lịch & nhận ưu đãi',
+                              : 'Đăng nhập để nhận ưu đãi & tích điểm',
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -79,20 +75,11 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
 
-            // Navigation Menu Items
+            // Navigation Menu Items (Streamlined without repeating Bottom Navigation items)
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.home_rounded,
-                    title: 'Trang chủ',
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.go('/');
-                    },
-                  ),
                   _buildMenuItem(
                     context: context,
                     icon: Icons.search_rounded,
@@ -114,16 +101,6 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   _buildMenuItem(
                     context: context,
-                    icon: Icons.calendar_today_rounded,
-                    title: 'Lịch hẹn của tôi',
-                    badgeCount: bookingCount > 0 ? bookingCount : null,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/my-bookings');
-                    },
-                  ),
-                  _buildMenuItem(
-                    context: context,
                     icon: Icons.map_rounded,
                     title: 'Bản đồ chi nhánh',
                     onTap: () {
@@ -133,24 +110,26 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   _buildMenuItem(
                     context: context,
-                    icon: Icons.notifications_rounded,
-                    title: 'Thông báo',
+                    icon: Icons.shield_outlined,
+                    title: 'Chính sách & Điều khoản',
                     onTap: () {
                       Navigator.pop(context);
-                      context.push('/notifications');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Chính sách Luxury Spa Marketplace')),
+                      );
                     },
                   ),
-                  const Divider(color: AppColors.divider, height: 16),
-                  if (isAuthenticated)
-                    _buildMenuItem(
-                      context: context,
-                      icon: Icons.account_circle_rounded,
-                      title: 'Hồ sơ cá nhân',
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push('/profile');
-                      },
-                    ),
+                  _buildMenuItem(
+                    context: context,
+                    icon: Icons.support_agent_rounded,
+                    title: 'Trung tâm trợ giúp',
+                    onTap: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Hotline hỗ trợ: 1900 8888')),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

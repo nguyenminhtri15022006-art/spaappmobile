@@ -23,12 +23,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Kiểm tra các mục menu theo đúng yêu cầu nghiệp vụ
-      expect(find.text('Trang chủ'), findsOneWidget);
       expect(find.text('Tìm kiếm dịch vụ'), findsOneWidget);
       expect(find.text('Spa yêu thích'), findsOneWidget);
-      expect(find.text('Lịch hẹn của tôi'), findsOneWidget);
       expect(find.text('Bản đồ chi nhánh'), findsOneWidget);
-      expect(find.text('Thông báo'), findsOneWidget);
+      expect(find.text('Chính sách & Điều khoản'), findsOneWidget);
+      expect(find.text('Trung tâm trợ giúp'), findsOneWidget);
       expect(find.text('Đăng nhập / Đăng ký'), findsOneWidget);
     });
   });

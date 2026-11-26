@@ -8,12 +8,16 @@ class BookingSummaryCard extends StatelessWidget {
   final BookingModel booking;
   final VoidCallback? onTap;
   final VoidCallback? onCancel;
+  final VoidCallback? onRebook;
+  final VoidCallback? onPayNow;
 
   const BookingSummaryCard({
     super.key,
     required this.booking,
     this.onTap,
     this.onCancel,
+    this.onRebook,
+    this.onPayNow,
   });
 
   Color _getStatusColor(BookingStatus status) {
@@ -21,11 +25,15 @@ class BookingSummaryCard extends StatelessWidget {
       case BookingStatus.confirmed:
         return AppColors.success;
       case BookingStatus.pending:
+      case BookingStatus.pendingPayment:
         return AppColors.accent;
       case BookingStatus.completed:
         return AppColors.primary;
       case BookingStatus.cancelled:
+      case BookingStatus.expired:
         return AppColors.error;
+      case BookingStatus.refunded:
+        return Colors.blueGrey;
     }
   }
 
@@ -177,6 +185,33 @@ class BookingSummaryCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           ),
                           child: const Text('Hủy lịch', style: TextStyle(fontSize: 12.5)),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      if (booking.status == BookingStatus.pendingPayment && onPayNow != null) ...[
+                        OutlinedButton(
+                          onPressed: onPayNow,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.accent,
+                            side: const BorderSide(color: AppColors.accent),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          ),
+                          child: const Text('Thanh toán', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      if ((booking.status == BookingStatus.completed ||
+                              booking.status == BookingStatus.cancelled ||
+                              booking.status == BookingStatus.expired) &&
+                          onRebook != null) ...[
+                        OutlinedButton(
+                          onPressed: onRebook,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: const BorderSide(color: AppColors.primary),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          ),
+                          child: const Text('Đặt lại', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
                         ),
                         const SizedBox(width: 6),
                       ],

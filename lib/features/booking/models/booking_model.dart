@@ -1,8 +1,11 @@
 enum BookingStatus {
   pending('Chờ xác nhận'),
+  pendingPayment('Chờ thanh toán'),
   confirmed('Đã xác nhận'),
   completed('Đã hoàn thành'),
-  cancelled('Đã hủy');
+  cancelled('Đã hủy'),
+  expired('Hết hạn giữ chỗ'),
+  refunded('Đã hoàn tiền');
 
   final String label;
   const BookingStatus(this.label);

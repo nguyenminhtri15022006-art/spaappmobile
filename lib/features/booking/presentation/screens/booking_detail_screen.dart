@@ -20,11 +20,15 @@ class BookingDetailScreen extends ConsumerWidget {
       case BookingStatus.confirmed:
         return AppColors.success;
       case BookingStatus.pending:
+      case BookingStatus.pendingPayment:
         return AppColors.accent;
       case BookingStatus.completed:
         return AppColors.primary;
       case BookingStatus.cancelled:
+      case BookingStatus.expired:
         return AppColors.error;
+      case BookingStatus.refunded:
+        return Colors.blueGrey;
     }
   }
 

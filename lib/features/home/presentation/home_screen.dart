@@ -351,8 +351,10 @@ class HomeScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
+                child: Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.network(
@@ -398,7 +400,8 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+          ),
+          const SizedBox(height: 20),
           ],
         ),
       ),
